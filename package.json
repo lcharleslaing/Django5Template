@@ -1,0 +1,30 @@
+{
+  "name": "djangotemplate",
+  "version": "1.0.0",
+  "description": "Django Starter Template with Authentication",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lcharleslaing/Django5Template.git"
+  },
+  "keywords": [
+    "Template",
+    "Django",
+    "Django",
+    "Template",
+    "Django",
+    "5"
+  ],
+  "author": "Lee Charles Laing <lcharleslaing@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lcharleslaing/Django5Template/issues"
+  },
+  "homepage": "https://github.com/lcharleslaing/Django5Template#readme",
+  "devDependencies": {
+    "daisyui": "^5.0.46"
+  }
+}

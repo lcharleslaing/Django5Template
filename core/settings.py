@@ -37,7 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tailwind',
+    'theme',
+    'main',
 ]
+
+NPM_BIN_PATH = r"C:\Users\lchar\AppData\Roaming\npm\npm.cmd"
+
+# Added: Registers the theme app for Tailwind
+TAILWIND_APP_NAME = 'theme'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,10 +62,13 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # Added project-level templates directory for global templates (e.g., base.html)
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                # Added for better debugging in development
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -116,7 +127,24 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Added: Serve Tailwind CSS and other static assets from theme/static during development
+STATICFILES_DIRS = [
+    BASE_DIR / 'theme' / 'static',
+]
+
+# Added: Directory where collectstatic will gather static files for production
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Added: Authentication redirects for login/logout flows
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+LOGIN_URL = '/login/'
+
+# Email backend for development: prints emails to the console.
+# Use an SMTP backend in production for real email delivery.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
