@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Delete File - Kemco Engineering{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-8">
+            <div class="flex items-center mb-4">
+                <a href="{% url 'files:file_detail' file.id %}" class="btn btn-ghost btn-sm mr-4">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Back to File
+                </a>
+                <h1 class="text-3xl font-bold text-error">Delete File</h1>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl border-l-4 border-error">
+            <div class="card-body">
+                <div class="flex items-center mb-6">
+                    <div class="avatar placeholder mr-4">
+                        <div class="bg-error text-error-content rounded-full w-16">
+                            <span class="text-2xl">⚠️</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="card-title text-xl text-error">Confirm Deletion</h2>
+                        <p class="text-base-content/70">This action cannot be undone.</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning mb-6">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                    <span>Are you sure you want to delete "{{ file.title }}"?</span>
+                </div>
+
+                <div class="bg-base-200 p-4 rounded-lg mb-6">
+                    <h3 class="font-semibold mb-2">File Details:</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Title:</span>
+                            <p>{{ file.title }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium">Filename:</span>
+                            <p class="font-mono">{{ file.filename }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium">Size:</span>
+                            <p>{{ file.file_size|filesizeformat }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium">Type:</span>
+                            <p>{{ file.file_extension|upper }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium">Uploaded:</span>
+                            <p>{{ file.uploaded_at|date:"M d, Y" }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium">By:</span>
+                            <p>{{ file.uploaded_by.username }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-actions justify-end">
+                        <a href="{% url 'files:file_detail' file.id %}" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-error">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Delete File
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

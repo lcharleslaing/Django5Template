@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Test - Prompts{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-4">Prompts Test Page</h1>
+        <p class="text-lg">If you can see this, the template loading is working!</p>
+        <a href="{% url 'prompts:prompt_list' %}" class="btn btn-primary mt-4">Back to Prompts</a>
+    </div>
+</div>
+{% endblock %} 

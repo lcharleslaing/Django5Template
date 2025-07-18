@@ -7,6 +7,13 @@ from main.views import register
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
+    # File and Image management
+    path('files/', include('files.urls')),
+    path('images/', include('images.urls')),
+    # User Profile management
+    path('profile/', include('userprofile.urls')),
+    # Prompt management
+    path('prompts/', include('prompts.urls')),
     # Registration page
     path('register/', register, name='register'),  # User registration
     # Login page using Django's built-in view
@@ -20,9 +27,7 @@ urlpatterns = [
     path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),  # Password reset complete
 ]
 
-# Temporarily disabled browser reload to debug process issues
-# if settings.DEBUG:
-#     # Include django_browser_reload URLs only in DEBUG mode
-#     urlpatterns += [
-#         path("__reload__/", include("django_browser_reload.urls")),
-#     ]
+# Media files (for development)
+if settings.DEBUG:
+    from django.conf.urls.static import static
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

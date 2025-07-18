@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}AI Prompts - Kemco Engineering{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-4">AI Prompts</h1>
+        <p class="text-lg mb-6">Discover and test powerful AI prompts</p>
+        
+        {% if user.is_authenticated %}
+            <div class="mb-6">
+                <a href="{% url 'prompts:prompt_create' %}" class="btn btn-primary">
+                    Create Prompt
+                </a>
+                <a href="{% url 'prompts:my_prompts' %}" class="btn btn-outline ml-2">
+                    My Prompts
+                </a>
+            </div>
+        {% endif %}
+        
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">All Prompts</h2>
+                
+                {% if page_obj %}
+                    <div class="space-y-4">
+                        {% for prompt in page_obj %}
+                            <div class="border-b border-base-300 pb-4 last:border-b-0">
+                                <h3 class="text-lg font-semibold">{{ prompt.title }}</h3>
+                                <p class="text-base-content/70">{{ prompt.short_description }}</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="badge badge-{{ prompt.difficulty_color }}">{{ prompt.get_difficulty_display }}</span>
+                                    <span class="text-sm text-base-content/60">by @{{ prompt.author.username }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <p class="text-base-content/60">No prompts found.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'prompts:prompt_create' %}" class="btn btn-primary mt-4">
+                                Create First Prompt
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

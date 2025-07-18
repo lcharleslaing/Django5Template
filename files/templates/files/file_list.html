@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Files - Kemco Engineering{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-base-content">File Management</h1>
+            <p class="text-base-content/70 mt-2">Upload and manage your files</p>
+        </div>
+        <a href="{% url 'files:file_upload' %}" class="btn btn-primary">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Upload File
+        </a>
+    </div>
+
+    {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %} mb-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {% if message.tags == 'error' %}
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        {% else %}
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        {% endif %}
+                    </svg>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if files %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for file in files %}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <div class="flex items-center mb-4">
+                            <div class="avatar placeholder mr-4">
+                                <div class="bg-neutral text-neutral-content rounded-full w-12">
+                                    <span class="text-lg font-bold">
+                                        {% if file.is_image %}
+                                            🖼️
+                                        {% elif file.is_pdf %}
+                                            📄
+                                        {% elif file.is_document %}
+                                            📝
+                                        {% elif file.is_spreadsheet %}
+                                            📊
+                                        {% else %}
+                                            📁
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h2 class="card-title text-lg">{{ file.title }}</h2>
+                                <p class="text-sm text-base-content/70">{{ file.filename }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if file.description %}
+                            <p class="text-sm text-base-content/80 mb-4">{{ file.description|truncatewords:20 }}</p>
+                        {% endif %}
+                        
+                        <div class="text-xs text-base-content/60 mb-4">
+                            <div class="flex justify-between">
+                                <span>Size: {{ file.file_size|filesizeformat }}</span>
+                                <span>Type: {{ file.file_extension|upper }}</span>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span>By: {{ file.uploaded_by.username }}</span>
+                                <span>{{ file.uploaded_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-actions justify-end">
+                            <a href="{% url 'files:file_detail' file.id %}" class="btn btn-sm btn-outline">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                View
+                            </a>
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-primary">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                Download
+                            </a>
+                            {% if user == file.uploaded_by or user.is_staff %}
+                                <a href="{% url 'files:file_delete' file.id %}" class="btn btn-sm btn-error">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Delete
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <div class="avatar placeholder mb-4">
+                <div class="bg-neutral text-neutral-content rounded-full w-24">
+                    <span class="text-4xl">📁</span>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">No files uploaded yet</h3>
+            <p class="text-base-content/70 mb-6">Start by uploading your first file</p>
+            <a href="{% url 'files:file_upload' %}" class="btn btn-primary">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                Upload Your First File
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

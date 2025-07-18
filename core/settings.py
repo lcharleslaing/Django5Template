@@ -40,6 +40,10 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'main',
+    'files',
+    'images',
+    'userprofile',
+    'prompts',
 ]
 
 # Temporarily disabled browser reload to debug process issues
@@ -146,6 +150,10 @@ STATICFILES_DIRS = [
 
 # Added: Directory where collectstatic will gather static files for production
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files (user uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

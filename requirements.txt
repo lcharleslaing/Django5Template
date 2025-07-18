@@ -4,3 +4,4 @@ django-tailwind
 python-dotenv
 sqlparse
 tzdata
+Pillow

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Kemco Engineering{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <div class="flex items-center mb-4">
+                <a href="{% url 'userprofile:profile_view' %}" class="btn btn-ghost btn-sm mr-4">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Back to Profile
+                </a>
+                <h1 class="text-3xl font-bold text-base-content">Edit Profile</h1>
+            </div>
+        </div>
+
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %} mb-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {% if message.tags == 'error' %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            {% else %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            {% endif %}
+                        </svg>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Avatar Section -->
+                <div class="lg:col-span-1">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title text-xl mb-4">Avatar</h2>
+                            
+                            <div class="text-center mb-6">
+                                <div class="avatar mb-4">
+                                    <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                                        {% if user.profile.has_avatar %}
+                                            <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}'s avatar" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <div class="bg-primary text-primary-content flex items-center justify-center text-4xl font-bold">
+                                                {{ user.profile.initials }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-semibold">Upload New Avatar</span>
+                                    </label>
+                                    {{ profile_form.avatar }}
+                                    {% if profile_form.avatar.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ profile_form.avatar.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-base-content/60">
+                                            Maximum 5MB. JPG, PNG, GIF, WEBP
+                                        </span>
+                                    </label>
+                                </div>
+                                
+                                {% if user.profile.has_avatar %}
+                                    <form method="post" action="{% url 'userprofile:avatar_remove' %}" class="mt-4">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-error btn-sm w-full">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                            Remove Avatar
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Information -->
+                <div class="lg:col-span-2">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title text-xl mb-6">Profile Information</h2>
+                            
+                            {% if user_form.errors or profile_form.errors %}
+                                <div class="alert alert-error mb-6">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span>Please correct the errors below.</span>
+                                </div>
+                            {% endif %}
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Basic Information -->
+                                <div class="space-y-4">
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">First Name *</span>
+                                        </label>
+                                        {{ user_form.first_name }}
+                                        {% if user_form.first_name.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ user_form.first_name.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">Last Name *</span>
+                                        </label>
+                                        {{ user_form.last_name }}
+                                        {% if user_form.last_name.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ user_form.last_name.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">Email *</span>
+                                        </label>
+                                        {{ user_form.email }}
+                                        {% if user_form.email.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ user_form.email.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">Phone</span>
+                                        </label>
+                                        {{ profile_form.phone }}
+                                        {% if profile_form.phone.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ profile_form.phone.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Professional Information -->
+                                <div class="space-y-4">
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">Company</span>
+                                        </label>
+                                        {{ profile_form.company }}
+                                        {% if profile_form.company.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ profile_form.company.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">Position</span>
+                                        </label>
+                                        {{ profile_form.position }}
+                                        {% if profile_form.position.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ profile_form.position.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">Website</span>
+                                        </label>
+                                        {{ profile_form.website }}
+                                        {% if profile_form.website.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ profile_form.website.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text font-semibold">Location</span>
+                                        </label>
+                                        {{ profile_form.location }}
+                                        {% if profile_form.location.errors %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ profile_form.location.errors.0 }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bio and Date of Birth -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-semibold">Bio</span>
+                                    </label>
+                                    {{ profile_form.bio }}
+                                    {% if profile_form.bio.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ profile_form.bio.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-semibold">Date of Birth</span>
+                                    </label>
+                                    {{ profile_form.date_of_birth }}
+                                    {% if profile_form.date_of_birth.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ profile_form.date_of_birth.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="card-actions justify-end mt-8">
+                                <a href="{% url 'userprofile:profile_view' %}" class="btn btn-outline">Cancel</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

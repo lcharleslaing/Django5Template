@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ file.title }} - Kemco Engineering{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <div class="flex items-center mb-4">
+                <a href="{% url 'files:file_list' %}" class="btn btn-ghost btn-sm mr-4">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Back to Files
+                </a>
+                <h1 class="text-3xl font-bold text-base-content">{{ file.title }}</h1>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- File Preview -->
+            <div class="lg:col-span-2">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title text-xl mb-4">File Preview</h2>
+                        
+                        <div class="flex items-center justify-center p-8 bg-base-200 rounded-lg">
+                            <div class="text-center">
+                                <div class="avatar placeholder mb-4">
+                                    <div class="bg-neutral text-neutral-content rounded-full w-24">
+                                        <span class="text-4xl font-bold">
+                                            {% if file.is_image %}
+                                                🖼️
+                                            {% elif file.is_pdf %}
+                                                📄
+                                            {% elif file.is_document %}
+                                                📝
+                                            {% elif file.is_spreadsheet %}
+                                                📊
+                                            {% else %}
+                                                📁
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <h3 class="text-lg font-semibold mb-2">{{ file.filename }}</h3>
+                                <p class="text-base-content/70 mb-4">{{ file.file_extension|upper }} File</p>
+                                
+                                {% if file.is_image %}
+                                    <img src="{{ file.file.url }}" alt="{{ file.title }}" class="max-w-full h-auto rounded-lg shadow-lg">
+                                {% else %}
+                                    <p class="text-base-content/60">Preview not available for this file type</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4 mt-6">
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-primary">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                Download File
+                            </a>
+                            
+                            {% if user == file.uploaded_by or user.is_staff %}
+                                <a href="{% url 'files:file_delete' file.id %}" class="btn btn-error">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Delete File
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Information -->
+            <div class="lg:col-span-1">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title text-xl mb-4">File Information</h2>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label">
+                                    <span class="label-text font-semibold">Title</span>
+                                </label>
+                                <p class="text-base-content">{{ file.title }}</p>
+                            </div>
+                            
+                            {% if file.description %}
+                                <div>
+                                    <label class="label">
+                                        <span class="label-text font-semibold">Description</span>
+                                    </label>
+                                    <p class="text-base-content">{{ file.description }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div>
+                                <label class="label">
+                                    <span class="label-text font-semibold">Filename</span>
+                                </label>
+                                <p class="text-base-content font-mono text-sm">{{ file.filename }}</p>
+                            </div>
+                            
+                            <div>
+                                <label class="label">
+                                    <span class="label-text font-semibold">File Type</span>
+                                </label>
+                                <p class="text-base-content">{{ file.file_extension|upper }}</p>
+                            </div>
+                            
+                            <div>
+                                <label class="label">
+                                    <span class="label-text font-semibold">File Size</span>
+                                </label>
+                                <p class="text-base-content">{{ file.file_size|filesizeformat }}</p>
+                            </div>
+                            
+                            <div>
+                                <label class="label">
+                                    <span class="label-text font-semibold">Uploaded By</span>
+                                </label>
+                                <p class="text-base-content">{{ file.uploaded_by.username }}</p>
+                            </div>
+                            
+                            <div>
+                                <label class="label">
+                                    <span class="label-text font-semibold">Upload Date</span>
+                                </label>
+                                <p class="text-base-content">{{ file.uploaded_at|date:"F d, Y \a\t g:i A" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
