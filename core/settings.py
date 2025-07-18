@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-5b(t4uzirw5=or^lw1@o2o4f964+8#&4f!*^z(1!klewa_4s!x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -42,7 +42,12 @@ INSTALLED_APPS = [
     'main',
 ]
 
-NPM_BIN_PATH = r"C:\Users\lchar\AppData\Roaming\npm\npm.cmd"
+# Temporarily disabled browser reload to debug process issues
+# if DEBUG:
+#     # Add django_browser_reload only in DEBUG mode
+#     INSTALLED_APPS += ['django_browser_reload']
+
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 # Added: Registers the theme app for Tailwind
 TAILWIND_APP_NAME = 'theme'
@@ -56,6 +61,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Temporarily disabled browser reload middleware to debug process issues
+# if DEBUG:
+#     # Add django_browser_reload middleware only in DEBUG mode
+#     MIDDLEWARE += [
+#         "django_browser_reload.middleware.BrowserReloadMiddleware",
+#     ]
 
 ROOT_URLCONF = 'core.urls'
 

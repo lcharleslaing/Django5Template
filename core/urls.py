@@ -1,30 +1,12 @@
-"""
-URL configuration for core project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path
-# Import Django's built-in authentication views
-from django.contrib.auth import views as auth_views  # Added for authentication views
-# Import custom views from main app
-from main.views import register, home  # Added for custom home and register views
+from django.urls import path, include   
+from django.contrib.auth import views as auth_views
+from django.conf import settings
+from main.views import register
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Home page
-    path('', home, name='home'),  # Main landing page
+    path('', include('main.urls')),
     # Registration page
     path('register/', register, name='register'),  # User registration
     # Login page using Django's built-in view
@@ -37,3 +19,10 @@ urlpatterns = [
     path('password-reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'), name='password_reset_confirm'),  # Password reset link
     path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),  # Password reset complete
 ]
+
+# Temporarily disabled browser reload to debug process issues
+# if settings.DEBUG:
+#     # Include django_browser_reload URLs only in DEBUG mode
+#     urlpatterns += [
+#         path("__reload__/", include("django_browser_reload.urls")),
+#     ]
