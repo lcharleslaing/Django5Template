@@ -24,4 +24,31 @@ def register(request):
 
 @login_required
 def home(request):
-    return render(request, 'main/home.html')
+    """Dashboard homepage that shows aggregated statistics across all models."""
+    from django.apps import apps
+
+    model_stats = []
+    for model in apps.get_models():
+        meta = model._meta
+        try:
+            count = model.objects.count()
+        except Exception:
+            # Unmanaged or abstract models may raise errors
+            continue
+
+        model_stats.append({
+            'label': meta.verbose_name_plural.title(),
+            'count': count,
+            'app_label': meta.app_label,
+            'model_name': meta.model_name,
+            'admin_url': f"/admin/{meta.app_label}/{meta.model_name}/"  # Quick link to admin list
+        })
+
+    # Sort by count descending and show top 8 to keep UI tidy
+    model_stats.sort(key=lambda x: x['count'], reverse=True)
+
+    context = {
+        'model_stats': model_stats[:8],
+    }
+
+    return render(request, 'main/dashboard.html', context)

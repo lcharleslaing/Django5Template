@@ -14,6 +14,8 @@ urlpatterns = [
     path('profile/', include('userprofile.urls')),
     # Prompt management
     path('prompts/', include('prompts.urls')),
+    # Global search endpoint
+    path('search/', include('search.urls')),
     # Registration page
     path('register/', register, name='register'),  # User registration
     # Login page using Django's built-in view

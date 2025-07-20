@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'images',
     'userprofile',
     'prompts',
+    'search',
 ]
 
 # Temporarily disabled browser reload to debug process issues

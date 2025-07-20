@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6 flex items-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.25 17.75L6.5 13m0 0l4.75-4.75M6.5 13h11.25" />
+    </svg>
+    Overview
+</h1>
+
+<!-- Stats grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    {% for stat in model_stats %}
+        <a href="{{ stat.admin_url }}" class="card bg-base-100 shadow hover:shadow-lg transition-shadow border border-base-200">
+            <div class="card-body p-4 text-center">
+                <h2 class="text-5xl font-extrabold text-primary">{{ stat.count }}</h2>
+                <p class="uppercase tracking-wide text-sm opacity-80">{{ stat.label }}</p>
+            </div>
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Quick actions -->
+<div class="flex flex-wrap gap-4">
+    <a href="/files/" class="btn btn-secondary">Manage Files</a>
+    <a href="/images/" class="btn btn-accent">Image Gallery</a>
+    <a href="/profile/" class="btn btn-outline">My Profile</a>
+    <a href="/prompts/" class="btn btn-primary">AI Prompts</a>
+</div>
+
+{% endblock %}
