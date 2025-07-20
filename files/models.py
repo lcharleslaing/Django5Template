@@ -42,3 +42,23 @@ class File(models.Model):
     def is_spreadsheet(self):
         spreadsheet_extensions = ['.xls', '.xlsx', '.csv']
         return self.file_extension() in spreadsheet_extensions
+    
+    def get_search_content(self):
+        """Return searchable content for the search index"""
+        return {
+            'title': self.title,
+            'content': f"{self.title} {self.description or ''} {self.filename()} {self.file_extension()}",
+            'description': self.description or f"File: {self.filename()}",
+            'url': f'/files/{self.id}/',
+            'weight': 2 if self.is_pdf() else 1,
+            'is_public': True,
+            'fields': {
+                'filename': self.filename(),
+                'extension': self.file_extension(),
+                'file_size': self.file_size,
+                'is_pdf': self.is_pdf(),
+                'is_image': self.is_image(),
+                'is_document': self.is_document(),
+                'is_spreadsheet': self.is_spreadsheet(),
+            }
+        }

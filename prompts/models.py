@@ -21,6 +21,22 @@ class Category(models.Model):
     
     def get_absolute_url(self):
         return reverse('prompts:category_detail', kwargs={'pk': self.pk})
+    
+    def get_search_content(self):
+        """Return searchable content for the search index"""
+        return {
+            'title': self.name,
+            'content': f"{self.name} {self.description or ''}",
+            'description': self.description or f"Category: {self.name}",
+            'url': f'/prompts/categories/{self.pk}/',
+            'weight': 1,
+            'is_public': True,
+            'fields': {
+                'prompt_count': self.prompts.count(),
+                'color': self.color,
+                'icon': self.icon,
+            }
+        }
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -32,6 +48,21 @@ class Tag(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def get_search_content(self):
+        """Return searchable content for the search index"""
+        return {
+            'title': self.name,
+            'content': f"Tag: {self.name}",
+            'description': f"Tag: {self.name}",
+            'url': f'/prompts/tags/{self.name}/',
+            'weight': 1,
+            'is_public': True,
+            'fields': {
+                'prompt_count': self.prompts.count(),
+                'color': self.color,
+            }
+        }
 
 class Prompt(models.Model):
     PROMPT_TYPES = [
@@ -113,6 +144,28 @@ class Prompt(models.Model):
         
         super().save(*args, **kwargs)
     
+    def get_search_content(self):
+        """Return searchable content for the search index"""
+        tags_text = ' '.join([tag.name for tag in self.tags.all()])
+        return {
+            'title': self.title,
+            'content': f"{self.title} {self.description} {self.content} {self.example_input or ''} {self.example_output or ''} {tags_text}",
+            'description': self.description,
+            'url': f'/prompts/{self.slug}/',
+            'weight': 3 if self.is_featured else 2,
+            'is_public': self.is_public,
+            'fields': {
+                'category': self.category.name,
+                'prompt_type': self.prompt_type,
+                'difficulty': self.difficulty,
+                'tags': [tag.name for tag in self.tags.all()],
+                'usage_count': self.usage_count,
+                'average_rating': float(self.average_rating),
+                'is_featured': self.is_featured,
+                'is_template': self.is_template,
+            }
+        }
+    
     def get_absolute_url(self):
         return reverse('prompts:prompt_detail', kwargs={'slug': self.slug})
     
@@ -190,3 +243,18 @@ class PromptCollection(models.Model):
     
     def get_absolute_url(self):
         return reverse('prompts:collection_detail', kwargs={'pk': self.pk})
+    
+    def get_search_content(self):
+        """Return searchable content for the search index"""
+        return {
+            'title': self.name,
+            'content': f"{self.name} {self.description or ''}",
+            'description': self.description or f"Collection: {self.name}",
+            'url': f'/prompts/collections/{self.pk}/',
+            'weight': 1,
+            'is_public': self.is_public,
+            'fields': {
+                'prompt_count': self.prompts.count(),
+                'is_public': self.is_public,
+            }
+        }

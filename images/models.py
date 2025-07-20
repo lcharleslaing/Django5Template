@@ -75,3 +75,22 @@ class Image(models.Model):
         if self.width and self.height:
             return self.width / self.height
         return None
+    
+    def get_search_content(self):
+        """Return searchable content for the search index"""
+        return {
+            'title': self.title,
+            'content': f"{self.title} {self.description or ''} {self.filename()} {self.file_extension()} {self.width}x{self.height}",
+            'description': self.description or f"Image: {self.filename()} ({self.width}x{self.height})",
+            'url': f'/images/{self.id}/',
+            'weight': 2,
+            'is_public': True,
+            'fields': {
+                'filename': self.filename(),
+                'extension': self.file_extension(),
+                'file_size': self.file_size,
+                'width': self.width,
+                'height': self.height,
+                'aspect_ratio': self.aspect_ratio(),
+            }
+        }

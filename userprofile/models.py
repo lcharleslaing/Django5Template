@@ -63,6 +63,26 @@ class UserProfile(models.Model):
     def has_avatar(self):
         """Check if user has a custom avatar"""
         return self.avatar and self.avatar.name != 'avatars/default.png'
+    
+    def get_search_content(self):
+        """Return searchable content for the search index"""
+        return {
+            'title': self.full_name,
+            'content': f"{self.full_name} {self.bio or ''} {self.company or ''} {self.position or ''} {self.location or ''}",
+            'description': self.bio or f"Profile of {self.full_name}",
+            'url': f'/profile/{self.user.username}/',
+            'weight': 1,
+            'is_public': True,
+            'fields': {
+                'username': self.user.username,
+                'email': self.user.email,
+                'company': self.company,
+                'position': self.position,
+                'location': self.location,
+                'website': self.website,
+                'has_avatar': self.has_avatar,
+            }
+        }
 
 # Signal to automatically create UserProfile when User is created
 @receiver(post_save, sender=User)

@@ -1,0 +1,13 @@
+from django.urls import path
+from . import views
+
+app_name = 'search'
+
+urlpatterns = [
+    path('', views.search_view, name='search'),
+    path('api/', views.search_api, name='search_api'),
+    path('suggestions/', views.search_suggestions, name='search_suggestions'),
+    path('autocomplete/', views.search_autocomplete, name='search_autocomplete'),
+    path('stats/', views.search_stats, name='search_stats'),
+    path('rebuild/', views.rebuild_search_index, name='rebuild_index'),
+]
