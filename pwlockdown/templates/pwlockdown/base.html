@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PWLockdown - Password Manager{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom styles -->
+    <style>
+        .password-strength-very-weak { @apply bg-red-500; }
+        .password-strength-weak { @apply bg-orange-500; }
+        .password-strength-medium { @apply bg-yellow-500; }
+        .password-strength-strong { @apply bg-blue-500; }
+        .password-strength-very-strong { @apply bg-green-500; }
+        
+        .sidebar-nav {
+            transition: all 0.3s ease;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="h-full flex flex-col">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-indigo-600 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <i class="fas fa-shield-alt text-white text-2xl mr-3"></i>
+                            <span class="text-white text-xl font-bold">PWLockdown</span>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="{% url 'pwlockdown:dashboard' %}" class="text-indigo-100 hover:text-white inline-flex items-center px-1 pt-1 text-sm font-medium">
+                                <i class="fas fa-tachometer-alt mr-2"></i>
+                                Dashboard
+                            </a>
+                            <a href="{% url 'pwlockdown:password_list' %}" class="text-indigo-100 hover:text-white inline-flex items-center px-1 pt-1 text-sm font-medium">
+                                <i class="fas fa-key mr-2"></i>
+                                Passwords
+                            </a>
+                            <a href="{% url 'pwlockdown:password_generator' %}" class="text-indigo-100 hover:text-white inline-flex items-center px-1 pt-1 text-sm font-medium">
+                                <i class="fas fa-random mr-2"></i>
+                                Generator
+                            </a>
+                            <a href="{% url 'pwlockdown:security_settings' %}" class="text-indigo-100 hover:text-white inline-flex items-center px-1 pt-1 text-sm font-medium">
+                                <i class="fas fa-cog mr-2"></i>
+                                Security
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                        <!-- User menu -->
+                        <div class="relative ml-3">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-indigo-100">{{ user.username }}</span>
+                                <a href="{% url 'logout' %}" class="text-indigo-100 hover:text-white">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Mobile menu button -->
+                    <div class="sm:hidden flex items-center">
+                        <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-indigo-100 hover:text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" id="mobile-menu-button">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div class="sm:hidden hidden" id="mobile-menu">
+                <div class="pt-2 pb-3 space-y-1">
+                    <a href="{% url 'pwlockdown:dashboard' %}" class="text-indigo-100 hover:text-white block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-tachometer-alt mr-2"></i>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'pwlockdown:password_list' %}" class="text-indigo-100 hover:text-white block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-key mr-2"></i>
+                        Passwords
+                    </a>
+                    <a href="{% url 'pwlockdown:password_generator' %}" class="text-indigo-100 hover:text-white block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-random mr-2"></i>
+                        Generator
+                    </a>
+                    <a href="{% url 'pwlockdown:security_settings' %}" class="text-indigo-100 hover:text-white block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-cog mr-2"></i>
+                        Security
+                    </a>
+                    <a href="{% url 'logout' %}" class="text-indigo-100 hover:text-white block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page header -->
+        {% block header %}{% endblock %}
+
+        <!-- Main content -->
+        <main class="flex-1">
+            <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <!-- Flash messages -->
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for message in messages %}
+                            <div class="rounded-md p-4 mb-4 {% if message.tags == 'error' %}bg-red-50 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800{% elif message.tags == 'success' %}bg-green-50 text-green-800{% else %}bg-blue-50 text-blue-800{% endif %}">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        {% if message.tags == 'error' %}
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        {% elif message.tags == 'warning' %}
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        {% elif message.tags == 'success' %}
+                                            <i class="fas fa-check-circle"></i>
+                                        {% else %}
+                                            <i class="fas fa-info-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium">{{ message }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Page content -->
+                <div class="px-4 py-6 sm:px-0">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-sm text-gray-400">
+                    &copy; 2024 PWLockdown Password Manager. 
+                    <span class="text-gray-300">Secure • Modern • Expandable</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Auto-hide messages after 5 seconds
+        setTimeout(function() {
+            const messages = document.querySelectorAll('[class*="bg-red-50"], [class*="bg-yellow-50"], [class*="bg-green-50"], [class*="bg-blue-50"]');
+            messages.forEach(function(message) {
+                message.style.transition = 'opacity 0.5s ease-out';
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+
+        // Password visibility toggle
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(function() {
+                const originalText = element.innerHTML;
+                element.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                element.classList.add('text-green-600');
+                
+                setTimeout(function() {
+                    element.innerHTML = originalText;
+                    element.classList.remove('text-green-600');
+                }, 2000);
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

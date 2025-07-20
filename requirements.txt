@@ -5,3 +5,8 @@ python-dotenv
 sqlparse
 tzdata
 Pillow
+cryptography
+djangorestframework
+pyotp
+qrcode[pil]
+django-cors-headers
