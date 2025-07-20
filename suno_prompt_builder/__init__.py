@@ -1,0 +1,1 @@
+# Django app for managing Suno song prompt data
