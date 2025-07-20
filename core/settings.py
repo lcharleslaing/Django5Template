@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     'images',
     'userprofile',
     'prompts',
+    'pwlockdown',
+    'rest_framework',
+    'corsheaders',
 ]
 
 # Temporarily disabled browser reload to debug process issues
@@ -57,6 +60,7 @@ NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 TAILWIND_APP_NAME = 'theme'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -168,3 +172,35 @@ LOGIN_URL = '/login/'
 # Email backend for development: prints emails to the console.
 # Use an SMTP backend in production for real email delivery.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+}
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# Password Management Security Settings
+PWLOCKDOWN_ENCRYPTION_KEY = SECRET_KEY  # In production, use a separate key
+PWLOCKDOWN_SESSION_TIMEOUT = 1800  # 30 minutes in seconds
+PWLOCKDOWN_MAX_LOGIN_ATTEMPTS = 5
+PWLOCKDOWN_PASSWORD_MIN_LENGTH = 12
+PWLOCKDOWN_REQUIRE_2FA = False  # Can be enabled per user
