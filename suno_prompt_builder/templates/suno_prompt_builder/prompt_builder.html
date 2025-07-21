@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Suno Prompt Builder{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-primary mb-2">🎵 Suno Prompt Builder</h1>
+            <p class="text-lg text-base-content/70">Create and manage song prompts for Suno AI</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Form Section -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-6">📝 Create New Prompt</h2>
+                    
+                    <form id="prompt-form" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <!-- Title -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">🎤 Title</span>
+                            </label>
+                            <input type="text" name="title" placeholder="Enter song title..." 
+                                   class="input input-bordered w-full" />
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">📝 Subject</span>
+                            </label>
+                            <input type="text" name="subject" placeholder="Describe the song concept..." 
+                                   class="input input-bordered w-full" />
+                        </div>
+
+                        <!-- Lyrics -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">📝 Lyrics (Optional)</span>
+                            </label>
+                            <textarea name="lyrics" placeholder="Enter lyrics or leave blank to use subject..." 
+                                      class="textarea textarea-bordered h-24"></textarea>
+                        </div>
+
+                        <!-- Styles -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">🎧 Styles (comma-separated)</span>
+                            </label>
+                            <input type="text" name="styles" placeholder="disco, rap, cinematic, electronic..." 
+                                   class="input input-bordered w-full" />
+                            <label class="label">
+                                <span class="label-text-alt">Example: disco, funk, electronic</span>
+                            </label>
+                        </div>
+
+                        <!-- Excluded Styles -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">❌ Styles to Exclude</span>
+                            </label>
+                            <input type="text" name="excluded_styles" placeholder="heavy metal, country..." 
+                                   class="input input-bordered w-full" />
+                        </div>
+
+                        <!-- Weirdness Slider -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">🎚 Weirdness: <span id="weirdness-value">50</span></span>
+                            </label>
+                            <input type="range" name="weirdness" min="0" max="100" value="50" 
+                                   class="range range-primary" id="weirdness-slider" />
+                            <div class="w-full flex justify-between text-xs px-2 mt-1">
+                                <span>Normal</span>
+                                <span>Weird</span>
+                            </div>
+                        </div>
+
+                        <!-- Style Influence Slider -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">🎚 Style Influence: <span id="style-influence-value">50</span></span>
+                            </label>
+                            <input type="range" name="style_influence" min="0" max="100" value="50" 
+                                   class="range range-secondary" id="style-influence-slider" />
+                            <div class="w-full flex justify-between text-xs px-2 mt-1">
+                                <span>Low</span>
+                                <span>High</span>
+                            </div>
+                        </div>
+
+                        <!-- Instrumental Toggle -->
+                        <div class="form-control">
+                            <label class="label cursor-pointer">
+                                <span class="label-text font-semibold">🎵 Instrumental</span>
+                                <input type="checkbox" name="is_instrumental" class="toggle toggle-primary" />
+                            </label>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" id="save-button" class="btn btn-primary flex-1">
+                                💾 Save Prompt
+                            </button>
+                            <button type="button" id="copy-button" class="btn btn-outline">
+                                📋 Copy JSON
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- JSON Preview Section -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-6">👀 JSON Preview</h2>
+                    <div class="bg-base-200 rounded-lg p-4">
+                        <pre id="json-preview" class="text-sm overflow-auto max-h-96 whitespace-pre-wrap"></pre>
+                    </div>
+                    <div class="mt-4 text-sm text-base-content/70">
+                        <p>💡 This preview updates in real-time as you fill out the form above.</p>
+                        <p>📋 Use the "Copy JSON" button to copy the formatted prompt to your clipboard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Prompts Section -->
+        <div class="mt-12">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-6">💾 Saved Prompts</h2>
+                    <div id="saved-prompts" class="space-y-4">
+                        <!-- Prompts will be loaded here via JavaScript -->
+                        <div class="text-center text-base-content/70">
+                            <p>No saved prompts yet. Create your first prompt above!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slider value update scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const weirdnessSlider = document.getElementById('weirdness-slider');
+    const weirdnessValue = document.getElementById('weirdness-value');
+    const styleInfluenceSlider = document.getElementById('style-influence-slider');
+    const styleInfluenceValue = document.getElementById('style-influence-value');
+
+    weirdnessSlider.addEventListener('input', function() {
+        weirdnessValue.textContent = this.value;
+    });
+
+    styleInfluenceSlider.addEventListener('input', function() {
+        styleInfluenceValue.textContent = this.value;
+    });
+});
+</script>
+
+<!-- Load our custom JavaScript -->
+<script src="{% static 'suno_prompt_builder/js/copy_prompt.js' %}"></script>
+{% endblock %}

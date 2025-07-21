@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'images',
     'userprofile',
     'prompts',
+    'suno_prompt_builder',
 ]
 
 # Temporarily disabled browser reload to debug process issues
