@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5b(t4uzirw5=or^lw1@o2o4f964+8#&4f!*^z(1!klewa_4s!x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'userprofile',
     'prompts',
     'suno_prompt_builder',
+    'subscriptions',
+    'search',  # Added
 ]
 
 # Temporarily disabled browser reload to debug process issues
@@ -59,6 +61,7 @@ TAILWIND_APP_NAME = 'theme'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Added for static file serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -84,8 +87,6 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                # Added for better debugging in development
-                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -151,6 +152,9 @@ STATICFILES_DIRS = [
 
 # Added: Directory where collectstatic will gather static files for production
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Added: WhiteNoise storage for compressed static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (user uploaded files)
 MEDIA_URL = '/media/'

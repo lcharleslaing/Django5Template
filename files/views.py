@@ -14,7 +14,7 @@ def files(request):
 @login_required
 def file_list(request):
     """Display list of uploaded files"""
-    files = File.objects.all().order_by('-uploaded_at')
+    files = File.objects.filter(uploaded_by=request.user).order_by('-uploaded_at')
     return render(request, 'files/file_list.html', {'files': files})
 
 @login_required
@@ -30,24 +30,24 @@ def file_upload(request):
             return redirect('files:file_list')
     else:
         form = FileUploadForm()
-    
+
     return render(request, 'files/file_upload.html', {'form': form})
 
 @login_required
 def file_detail(request, file_id):
     """Display file details"""
-    file_obj = get_object_or_404(File, id=file_id)
+    file_obj = get_object_or_404(File, id=file_id, uploaded_by=request.user)
     return render(request, 'files/file_detail.html', {'file': file_obj})
 
 @login_required
 def file_download(request, file_id):
     """Download a file"""
-    file_obj = get_object_or_404(File, id=file_id)
-    
+    file_obj = get_object_or_404(File, id=file_id, uploaded_by=request.user)
+
     # Check if file exists
     if not os.path.exists(file_obj.file.path):
         raise Http404("File not found")
-    
+
     # Open and serve the file
     with open(file_obj.file.path, 'rb') as f:
         response = HttpResponse(f.read(), content_type='application/octet-stream')
@@ -57,17 +57,12 @@ def file_download(request, file_id):
 @login_required
 def file_delete(request, file_id):
     """Delete a file"""
-    file_obj = get_object_or_404(File, id=file_id)
-    
-    # Only allow deletion by the uploader or admin
-    if request.user != file_obj.uploaded_by and not request.user.is_staff:
-        messages.error(request, "You don't have permission to delete this file.")
-        return redirect('files:file_list')
-    
+    file_obj = get_object_or_404(File, id=file_id, uploaded_by=request.user)
+
     if request.method == 'POST':
         title = file_obj.title
         file_obj.delete()
         messages.success(request, f'File "{title}" deleted successfully!')
         return redirect('files:file_list')
-    
+
     return render(request, 'files/file_delete.html', {'file': file_obj})

@@ -1,360 +1,374 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard - Command Center{% endblock %}
 
 {% block content %}
-<!-- Search Modal (Ctrl+K) -->
-<div id="searchModal" class="modal">
-    <div class="modal-box max-w-2xl">
-        <h3 class="font-bold text-lg mb-4">Search Everything</h3>
-        <div class="form-control">
-            <div class="input-group">
-                <input type="text" id="searchInput" placeholder="Search across all data..." class="input input-bordered w-full" />
-                <button class="btn btn-square" type="button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
+
+<!-- Hero Header Section -->
+<div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+    <!-- Animated background elements -->
+    <div class="absolute inset-0">
+        <div class="absolute top-0 left-0 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div class="absolute top-0 right-0 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <div class="relative z-10 px-6 py-12">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white/10 backdrop-blur-lg rounded-2xl flex items-center justify-center border border-white/20">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                            Welcome back, {{ user.first_name|default:user.username }}! 👋
+                        </h1>
+                        <p class="text-purple-200 mt-2">Here's what's happening in your command center</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-3">
+                    <div class="text-right">
+                        <p class="text-sm text-purple-200">Last active</p>
+                        <p class="font-semibold">{{ user.last_login|date:"M j, g:i A"|default:"Just now" }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-white/10 backdrop-blur-lg rounded-full flex items-center justify-center border border-white/20">
+                        <span class="text-lg font-bold">{{ user.username|first|upper }}</span>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div id="searchResults" class="mt-4 max-h-96 overflow-y-auto">
-            <div class="text-center text-gray-500 py-8">
-                <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <p>Start typing to search...</p>
-            </div>
-        </div>
-        
-        <div class="modal-action">
-            <label for="searchModal" class="btn">Close</label>
         </div>
     </div>
 </div>
 
-<!-- Dashboard Header -->
-<div class="mb-8">
-    <div class="flex justify-between items-center">
-        <div>
-            <h1 class="text-4xl font-bold text-base-content">Dashboard</h1>
-            <p class="text-base-content/70 mt-2">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="document.getElementById('searchModal').checked = true" class="btn btn-outline gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Search
-                <kbd class="kbd kbd-sm">⌘</kbd>
-                <kbd class="kbd kbd-sm">K</kbd>
-            </button>
-        </div>
-    </div>
-</div>
+<!-- Main Dashboard Content -->
+<div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-8">
 
-<!-- Quick Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {% if stats.users %}
-    <!-- Users Stats -->
-    <div class="stats shadow">
-        <div class="stat">
-            <div class="stat-figure text-primary">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-2a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            </div>
-            <div class="stat-title">Total Users</div>
-            <div class="stat-value text-primary">{{ stats.users.total }}</div>
-            <div class="stat-desc">{{ stats.users.new_this_month }} new this month</div>
+        <!-- Stats Overview Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {% for stat in stats %}
+            <a href="
+                {% if stat.label == 'AI Prompts' %}{% url 'prompts:prompt_list' %}
+                {% elif stat.label == 'Subscriptions' %}{% url 'subscriptions:subscription_list' %}
+                {% elif stat.label == 'Files' %}{% url 'files:file_list' %}
+                {% elif stat.label == 'Images' %}{% url 'images:image_list' %}
+                {% else %}#{% endif %}
+            " class="group bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6 hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 cursor-pointer block clickable-tile">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">{{ stat.label }}</p>
+                        <p class="text-3xl font-bold text-gray-900" data-count="{{ stat.count }}">{{ stat.count }}</p>
+                        {% if stat.new_this_week %}
+                        <div class="flex items-center mt-2">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                </svg>
+                                +{{ stat.new_this_week }} new
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br {{ stat.icon_bg }} text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {% if stat.icon_path %}
+                                {{ stat.icon_path|safe }}
+                            {% else %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            {% endif %}
+                        </svg>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
         </div>
-    </div>
-    {% endif %}
 
-    {% for app_name, models in stats.items %}
-        {% if app_name != 'users' %}
-            {% for model_name, model_stats in models.items %}
-                <div class="stats shadow">
-                    <div class="stat">
-                        <div class="stat-figure text-secondary">
-                            {% if model_name == 'prompt' %}
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Column: AI Tools & Creative Content -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Your AI Tools Section -->
+                <div class="bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <a href="{% url 'prompts:prompt_list' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
+                            <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                                 </svg>
-                            {% elif model_name == 'file' %}
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                            {% elif model_name == 'image' %}
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                            {% else %}
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                </svg>
-                            {% endif %}
-                        </div>
-                        <div class="stat-title">{{ model_name|title }}s</div>
-                        <div class="stat-value text-secondary">{{ model_stats.total }}</div>
-                        <div class="stat-desc">{{ model_stats.recent }} new this week</div>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900">Your AI Tools</h2>
+                        </a>
+                        <a href="{% url 'prompts:prompt_list' %}" class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center hover:scale-105 transition-transform">
+                            View all
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <a href="{% url 'prompts:prompt_list' %}" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 hover:shadow-md transition-shadow cursor-pointer block clickable-tile">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Prompts</h3>
+                                    <p class="text-sm text-gray-600">
+                                        {% for stat in stats %}
+                                            {% if stat.label == 'AI Prompts' %}
+                                                {{ stat.count }}
+                                            {% endif %}
+                                        {% endfor %} total
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'subscriptions:subscription_list' %}" class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100 hover:shadow-md transition-shadow cursor-pointer block">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Subscriptions</h3>
+                                    <p class="text-sm text-gray-600">
+                                        {% for stat in stats %}
+                                            {% if stat.label == 'Subscriptions' %}
+                                                {{ stat.count }}
+                                            {% endif %}
+                                        {% endfor %} active
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
-            {% endfor %}
-        {% endif %}
-    {% endfor %}
-</div>
 
-<!-- Main Content Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Quick Actions -->
-    <div class="lg:col-span-2">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    Quick Actions
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <a href="{% url 'prompts:prompt_list' %}" class="btn btn-outline btn-lg justify-start gap-3">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                        <div class="text-left">
-                            <div class="font-semibold">AI Prompts</div>
-                            <div class="text-sm opacity-70">Manage your prompts</div>
-                        </div>
-                    </a>
-                    
-                    <a href="{% url 'files:file_list' %}" class="btn btn-outline btn-lg justify-start gap-3">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <div class="text-left">
-                            <div class="font-semibold">File Manager</div>
-                            <div class="text-sm opacity-70">Upload and organize files</div>
-                        </div>
-                    </a>
-                    
-                    <a href="{% url 'images:image_list' %}" class="btn btn-outline btn-lg justify-start gap-3">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <div class="text-left">
-                            <div class="font-semibold">Image Gallery</div>
-                            <div class="text-sm opacity-70">View and manage images</div>
-                        </div>
-                    </a>
-                    
-                    <a href="{% url 'userprofile:profile_view' %}" class="btn btn-outline btn-lg justify-start gap-3">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <div class="text-left">
-                            <div class="font-semibold">My Profile</div>
-                            <div class="text-sm opacity-70">Update your information</div>
-                        </div>
-                    </a>
+                <!-- Creative Content Section -->
+                <div class="bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <a href="{% url 'images:image_list' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
+                            <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
+                                </svg>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900">Creative Content</h2>
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <a href="{% url 'images:image_list' %}" class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100 hover:shadow-md transition-shadow cursor-pointer block">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Images</h3>
+                                    <p class="text-sm text-gray-600">
+                                        {% for stat in stats %}
+                                            {% if stat.label == 'Images' %}
+                                                {{ stat.count }}
+                                            {% endif %}
+                                        {% endfor %} uploaded
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'files:file_list' %}" class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-100 hover:shadow-md transition-shadow cursor-pointer block">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Files</h3>
+                                    <p class="text-sm text-gray-600">
+                                        {% for stat in stats %}
+                                            {% if stat.label == 'Files' %}
+                                                {{ stat.count }}
+                                            {% endif %}
+                                        {% endfor %} stored
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Recent Activity -->
-    <div class="lg:col-span-1">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Recent Activity
-                </h2>
-                
-                <div class="space-y-3 mt-4">
-                    {% for activity in recent_activity %}
-                        <div class="flex items-center gap-3 p-3 rounded-lg bg-base-200">
-                            <div class="avatar placeholder">
-                                <div class="bg-neutral-focus text-neutral-content rounded-full w-8">
-                                    <span class="text-xs">{{ activity.type|first|upper }}</span>
-                                </div>
+
+            <!-- Right Column: Recent Activity -->
+            <div class="space-y-8">
+                <div class="bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 text-white shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900">Recent Activity</h2>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for activity in recent_activity|slice:":5" %}
+                        <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <div class="font-medium text-sm truncate">{{ activity.title }}</div>
-                                <div class="text-xs text-base-content/70">{{ activity.app }} • {{ activity.time|timesince }} ago</div>
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ activity.title }}</p>
+                                <p class="text-xs text-gray-500">{{ activity.time|timesince }} ago</p>
                             </div>
                         </div>
-                    {% empty %}
-                        <div class="text-center text-base-content/70 py-8">
-                            <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        {% empty %}
+                        <div class="text-center py-8">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                </svg>
+                            </div>
+                            <p class="text-gray-500 text-sm">No recent activity</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="mt-12">
+            <div class="bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">⚡ Quick Actions</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <a href="{% url 'prompts:prompt_create' %}" class="group bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            <p>No recent activity</p>
                         </div>
-                    {% endfor %}
+                        <h3 class="font-semibold text-gray-900 mb-1">Create Prompt</h3>
+                        <p class="text-sm text-gray-600">Build a new AI prompt</p>
+                    </a>
+
+                    <a href="{% url 'subscriptions:subscription_create' %}" class="group bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                        <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Add Subscription</h3>
+                        <p class="text-sm text-gray-600">Track a new service</p>
+                    </a>
+
+                    <a href="{% url 'files:file_upload' %}" class="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Upload File</h3>
+                        <p class="text-sm text-gray-600">Store a document</p>
+                    </a>
+
+                    <a href="{% url 'images:image_upload' %}" class="group bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border border-orange-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                        <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Upload Image</h3>
+                        <p class="text-sm text-gray-600">Add a photo</p>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- System Overview -->
-<div class="mt-8">
-    <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-            <h2 class="card-title">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                System Overview
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                {% for app_name, models in stats.items %}
-                    {% if app_name != 'users' %}
-                        <div class="card bg-base-200">
-                            <div class="card-body">
-                                <h3 class="card-title text-lg">{{ app_name|title }}</h3>
-                                <div class="space-y-2">
-                                    {% for model_name, model_stats in models.items %}
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm">{{ model_name|title }}s</span>
-                                            <div class="badge badge-primary">{{ model_stats.total }}</div>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Custom CSS for animations -->
+<style>
+    @keyframes blob {
+        0% {
+            transform: translate(0px, 0px) scale(1);
+        }
+        33% {
+            transform: translate(30px, -50px) scale(1.1);
+        }
+        66% {
+            transform: translate(-20px, 20px) scale(0.9);
+        }
+        100% {
+            transform: translate(0px, 0px) scale(1);
+        }
+    }
 
+    .animate-blob {
+        animation: blob 7s infinite;
+    }
+
+    .animation-delay-2000 {
+        animation-delay: 2s;
+    }
+
+    .animation-delay-4000 {
+        animation-delay: 4s;
+    }
+</style>
+
+<!-- CountUp.js for animated counters -->
+<script src="https://cdn.jsdelivr.net/npm/countup.js@2.6.0/dist/countUp.min.js"></script>
 <script>
-// Global search functionality
-let searchTimeout;
-const searchModal = document.getElementById('searchModal');
-const searchInput = document.getElementById('searchInput');
-const searchResults = document.getElementById('searchResults');
-
-// Ctrl+K or Cmd+K to open search
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('searchModal').checked = true;
-        setTimeout(() => searchInput.focus(), 100);
-    }
-    
-    // Escape to close
-    if (e.key === 'Escape') {
-        document.getElementById('searchModal').checked = false;
-    }
-});
-
-// Search input handler with debouncing
-searchInput.addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    const query = this.value.trim();
-    
-    if (query.length < 2) {
-        searchResults.innerHTML = `
-            <div class="text-center text-gray-500 py-8">
-                <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <p>Start typing to search...</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Show loading
-    searchResults.innerHTML = `
-        <div class="text-center py-8">
-            <span class="loading loading-spinner loading-md"></span>
-            <p class="mt-2">Searching...</p>
-        </div>
-    `;
-    
-    searchTimeout = setTimeout(() => {
-        fetch(`/api/search/?q=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(data => {
-                displaySearchResults(data.results);
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                searchResults.innerHTML = `
-                    <div class="text-center text-error py-8">
-                        <p>Search failed. Please try again.</p>
-                    </div>
-                `;
-            });
-    }, 300);
-});
-
-function displaySearchResults(results) {
-    if (results.length === 0) {
-        searchResults.innerHTML = `
-            <div class="text-center text-gray-500 py-8">
-                <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p>No results found</p>
-            </div>
-        `;
-        return;
-    }
-    
-    const resultHTML = results.map(result => `
-        <a href="${result.url}" class="block p-3 rounded-lg hover:bg-base-200 transition-colors">
-            <div class="flex items-start gap-3">
-                <div class="avatar placeholder">
-                    <div class="bg-primary text-primary-content rounded-full w-8">
-                        <span class="text-xs">${result.type.charAt(0)}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="font-medium text-sm truncate">${result.title}</div>
-                    <div class="text-xs text-base-content/70 mb-1">${result.app} • ${result.type}</div>
-                    ${result.description ? `<div class="text-xs text-base-content/60 truncate">${result.description}</div>` : ''}
-                </div>
-            </div>
-        </a>
-    `).join('');
-    
-    searchResults.innerHTML = resultHTML;
-}
-
-// Handle result selection with keyboard
-searchInput.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        const links = searchResults.querySelectorAll('a');
-        if (links.length === 0) return;
-        
-        const currentFocus = document.activeElement;
-        const currentIndex = Array.from(links).indexOf(currentFocus);
-        
-        let nextIndex;
-        if (e.key === 'ArrowDown') {
-            nextIndex = currentIndex < links.length - 1 ? currentIndex + 1 : 0;
-        } else {
-            nextIndex = currentIndex > 0 ? currentIndex - 1 : links.length - 1;
-        }
-        
-        links[nextIndex].focus();
-    } else if (e.key === 'Enter') {
-        const focused = document.activeElement;
-        if (focused.tagName === 'A') {
-            focused.click();
-        }
-    }
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate counters
+        const counters = document.querySelectorAll('[data-count]');
+        counters.forEach(counter => {
+            try {
+                const count = parseInt(counter.getAttribute('data-count'));
+                if (!isNaN(count) && count > 0) {
+                    const countUp = new CountUp(counter, count, {
+                        duration: 2.5,
+                        useEasing: true,
+                        useGrouping: true,
+                        separator: ',',
+                        decimal: '.'
+                    });
+                    countUp.start();
+                }
+            } catch (error) {
+                console.log('CountUp error:', error);
+                // Fallback: just show the number
+                const count = counter.getAttribute('data-count');
+                if (count) {
+                    counter.textContent = count;
+                }
+            }
+        });
+    });
 </script>
 {% endblock %}

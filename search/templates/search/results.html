@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h1 class="text-xl font-bold mb-4">Search Results for "{{ query }}"</h1>
+
+    {% if results %}
+        {% for result in results %}
+            <div class="card bg-base-100 shadow-xl mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">{{ result.model }}</h2>
+                    <ul class="space-y-2">
+                        {% for item in result.items %}
+                            <li class="p-2 bg-base-200 rounded">
+                                <a href="#" class="hover:text-primary">{{ item }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-8">
+            <p class="text-gray-500">No results found.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

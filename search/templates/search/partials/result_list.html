@@ -1,0 +1,54 @@
+{% if results %}
+    {% for result in results %}
+        <div class="p-4 border-b border-base-300 hover:bg-base-200 transition-colors">
+            <h3 class="font-bold text-base mb-2 flex items-center gap-2">
+                <span class="badge badge-primary badge-sm">{{ result.model }}</span>
+                <span class="text-base-content/70">{{ result.items|length }} result{{ result.items|length|pluralize }}</span>
+            </h3>
+            <ul class="space-y-1">
+                {% for item in result.items %}
+                    <li class="p-2 rounded hover:bg-base-300 transition-colors">
+                        {% if item.get_absolute_url %}
+                            <a href="{{ item.get_absolute_url }}" class="block hover:text-primary">
+                                <div class="font-medium">{{ item }}</div>
+                                {% if item.description %}
+                                    <div class="text-sm text-base-content/60 mt-1">{{ item.description|truncatechars:100 }}</div>
+                                {% elif item.bio %}
+                                    <div class="text-sm text-base-content/60 mt-1">{{ item.bio|truncatechars:100 }}</div>
+                                {% elif item.notes %}
+                                    <div class="text-sm text-base-content/60 mt-1">{{ item.notes|truncatechars:100 }}</div>
+                                {% endif %}
+                                {% if item.created_at %}
+                                    <div class="text-xs text-base-content/40 mt-1">{{ item.created_at|date:"M j, Y" }}</div>
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <div class="block">
+                                <div class="font-medium">{{ item }}</div>
+                                {% if item.description %}
+                                    <div class="text-sm text-base-content/60 mt-1">{{ item.description|truncatechars:100 }}</div>
+                                {% elif item.bio %}
+                                    <div class="text-sm text-base-content/60 mt-1">{{ item.bio|truncatechars:100 }}</div>
+                                {% elif item.notes %}
+                                    <div class="text-sm text-base-content/60 mt-1">{{ item.notes|truncatechars:100 }}</div>
+                                {% endif %}
+                                {% if item.created_at %}
+                                    <div class="text-xs text-base-content/40 mt-1">{{ item.created_at|date:"M j, Y" }}</div>
+                                {% endif %}
+                                <div class="text-xs text-base-content/40 mt-1">No detail page available</div>
+                            </div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="text-center py-8">
+        <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-base-content/70">No results found for "{{ query }}"</p>
+        <p class="text-sm text-base-content/50 mt-2">Try different keywords</p>
+    </div>
+{% endif %}

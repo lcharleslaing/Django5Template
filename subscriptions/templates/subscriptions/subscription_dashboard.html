@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscription Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Subscription Dashboard</h1>
+        <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-outline">
+            View All Subscriptions
+        </a>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stat bg-base-100 shadow rounded-lg">
+            <div class="stat-title">Total Subscriptions</div>
+            <div class="stat-value text-primary">{{ total_subscriptions }}</div>
+            <div class="stat-desc">All subscriptions</div>
+        </div>
+
+        <div class="stat bg-base-100 shadow rounded-lg">
+            <div class="stat-title">Active Subscriptions</div>
+            <div class="stat-value text-success">{{ active_subscriptions }}</div>
+            <div class="stat-desc">Currently active</div>
+        </div>
+
+        <div class="stat bg-base-100 shadow rounded-lg">
+            <div class="stat-title">API Enabled</div>
+            <div class="stat-value text-info">{{ api_enabled_subscriptions }}</div>
+            <div class="stat-desc">With API access</div>
+        </div>
+
+        <div class="stat bg-base-100 shadow rounded-lg">
+            <div class="stat-title">Monthly Cost</div>
+            <div class="stat-value text-warning">${{ total_monthly_cost|floatformat:2 }}</div>
+            <div class="stat-desc">Active subscriptions</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Subscriptions -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Recent Subscriptions</h2>
+                {% if recent_subscriptions %}
+                    <div class="space-y-4">
+                        {% for subscription in recent_subscriptions %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <h3 class="font-semibold">{{ subscription.name }}</h3>
+                                <p class="text-sm text-gray-600">{{ subscription.provider|default:"No provider" }}</p>
+                                <p class="text-xs text-gray-500">Added {{ subscription.created_at|date:"M d, Y" }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-primary">${{ subscription.amount }}</p>
+                                <span class="badge badge-sm {% if subscription.is_active %}badge-success{% else %}badge-error{% endif %}">
+                                    {% if subscription.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="text-gray-600">No subscriptions yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Upcoming Renewals -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Upcoming Renewals</h2>
+                {% if upcoming_renewals %}
+                    <div class="space-y-4">
+                        {% for subscription in upcoming_renewals %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <h3 class="font-semibold">{{ subscription.name }}</h3>
+                                <p class="text-sm text-gray-600">{{ subscription.get_billing_cycle_display }}</p>
+                                <p class="text-xs text-gray-500">Due {{ subscription.next_due_date|date:"M d, Y" }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-primary">${{ subscription.amount }}</p>
+                                <a href="{% url 'subscriptions:subscription_detail' subscription.pk %}" class="btn btn-xs btn-outline">
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-gray-600">No upcoming renewals</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{% url 'subscriptions:subscription_create' %}" class="btn btn-primary">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add New Subscription
+                    </a>
+                    <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-outline">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        View All Subscriptions
+                    </a>
+                    <a href="{% url 'admin:subscriptions_subscription_changelist' %}" class="btn btn-outline">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

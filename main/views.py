@@ -1,129 +1,157 @@
-from django.shortcuts import render, redirect  # For rendering templates and redirects
-from django.contrib.auth.forms import UserCreationForm  # Django's built-in user registration form
-from django.contrib import messages  # For flash messages
-from django.contrib.auth.decorators import login_required  # To require login for home view
-from django.http import JsonResponse
-from django.db.models import Q, Count
-from django.apps import apps
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import User
-import json
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
 from datetime import datetime, timedelta
 from django.utils import timezone
 
 # User registration view
-# Handles GET (show form) and POST (process form) requests
-# On successful registration, redirects to login page with a success message
-# Renders 'registration/register.html' template
-
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Your account has been created! You can now log in.')
-            return redirect('login')
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Account created successfully!')
+            return redirect('home')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
-# Home view, requires user to be logged in
-# Renders modern dashboard with comprehensive statistics
-
 @login_required
 def home(request):
     # Get dashboard statistics
-    stats = get_dashboard_stats()
-    
-    # Get recent activity
-    recent_activity = get_recent_activity()
-    
+    stats = get_dashboard_stats(request.user)
+    recent_activity = get_recent_activity(request.user)
+
+
+
     context = {
         'stats': stats,
         'recent_activity': recent_activity,
+        'year': datetime.now().year,
+        'timestamp': timezone.now().timestamp(),  # For cache busting
     }
     return render(request, 'main/dashboard.html', context)
 
-def get_dashboard_stats():
-    """Get comprehensive dashboard statistics"""
-    stats = {}
-    
-    # User statistics
-    total_users = User.objects.count()
-    active_users = User.objects.filter(last_login__gte=timezone.now() - timedelta(days=30)).count()
-    new_users_this_month = User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=30)).count()
-    
-    stats['users'] = {
-        'total': total_users,
-        'active': active_users,
-        'new_this_month': new_users_this_month,
-    }
-    
-    # Get statistics for all models dynamically
-    for model in apps.get_models():
-        if hasattr(model, '_meta'):
-            app_label = model._meta.app_label
-            model_name = model._meta.model_name
-            
-            # Skip Django's built-in models
-            if app_label in ['admin', 'auth', 'contenttypes', 'sessions']:
-                continue
-                
+def get_dashboard_stats(user):
+    """Get statistics for all apps and models with user-specific data"""
+    stats = []
+
+    try:
+        from django.apps import apps
+        from django.db.models import Count, Sum
+        from django.contrib.auth.models import User
+
+        # Define stat configurations with icons and colors
+        stat_configs = {
+            'prompts': {
+                'label': 'AI Prompts',
+                'icon_bg': 'from-blue-500 to-indigo-600',
+                'icon_path': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />',
+                'model_name': 'prompt',
+                'app_label': 'prompts',
+                'user_field': 'author'
+            },
+            'subscriptions': {
+                'label': 'Subscriptions',
+                'icon_bg': 'from-purple-500 to-pink-600',
+                'icon_path': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />',
+                'model_name': 'subscription',
+                'app_label': 'subscriptions',
+                'user_field': 'user'
+            },
+            'files': {
+                'label': 'Files',
+                'icon_bg': 'from-orange-500 to-red-600',
+                'icon_path': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />',
+                'model_name': 'file',
+                'app_label': 'files',
+                'user_field': 'uploaded_by'
+            },
+            'images': {
+                'label': 'Images',
+                'icon_bg': 'from-green-500 to-emerald-600',
+                'icon_path': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />',
+                'model_name': 'image',
+                'app_label': 'images',
+                'user_field': 'uploaded_by'
+            }
+        }
+
+        # Get stats for each configured model
+        for key, config in stat_configs.items():
             try:
-                total_count = model.objects.count()
-                
-                # Try to get recent items (assuming created_at or uploaded_at field)
-                recent_count = 0
+                model = apps.get_model(config['app_label'], config['model_name'])
+
+                # Get user-specific count
+                user_filter = {config['user_field']: user}
+                count = model.objects.filter(**user_filter).count()
+
+                # Get new this week count
+                week_ago = timezone.now() - timedelta(days=7)
                 if hasattr(model, 'created_at'):
-                    recent_count = model.objects.filter(
-                        created_at__gte=timezone.now() - timedelta(days=7)
+                    new_this_week = model.objects.filter(
+                        **user_filter,
+                        created_at__gte=week_ago
                     ).count()
                 elif hasattr(model, 'uploaded_at'):
-                    recent_count = model.objects.filter(
-                        uploaded_at__gte=timezone.now() - timedelta(days=7)
+                    new_this_week = model.objects.filter(
+                        **user_filter,
+                        uploaded_at__gte=week_ago
                     ).count()
-                elif hasattr(model, 'date_joined'):
-                    recent_count = model.objects.filter(
-                        date_joined__gte=timezone.now() - timedelta(days=7)
-                    ).count()
-                
-                if app_label not in stats:
-                    stats[app_label] = {}
-                
-                stats[app_label][model_name] = {
-                    'total': total_count,
-                    'recent': recent_count,
-                    'model': model,
-                }
-            except Exception:
+                else:
+                    new_this_week = 0
+
+                stats.append({
+                    'label': config['label'],
+                    'count': count,
+                    'new_this_week': new_this_week if new_this_week > 0 else None,
+                    'icon_bg': config['icon_bg'],
+                    'icon_path': config['icon_path']
+                })
+
+            except Exception as e:
+                print(f"Error getting stats for {key}: {e}")
                 continue
-    
+
+    except Exception as e:
+        print(f"Error in get_dashboard_stats: {e}")
+        stats = []
+
     return stats
 
-def get_recent_activity():
-    """Get recent activity across all models"""
+def get_recent_activity(user):
+    """Get recent activity across all models for the specific user"""
     activities = []
-    
-    # Get recent activities from different models
-    for model in apps.get_models():
-        if hasattr(model, '_meta'):
-            app_label = model._meta.app_label
-            model_name = model._meta.model_name
-            
-            # Skip Django's built-in models
-            if app_label in ['admin', 'auth', 'contenttypes', 'sessions']:
-                continue
-            
+
+    try:
+        from django.apps import apps
+
+        # Define models to track for activity
+        activity_models = [
+            {'app': 'prompts', 'model': 'prompt', 'user_field': 'author'},
+            {'app': 'subscriptions', 'model': 'subscription', 'user_field': 'user'},
+            {'app': 'files', 'model': 'file', 'user_field': 'uploaded_by'},
+            {'app': 'images', 'model': 'image', 'user_field': 'uploaded_by'},
+        ]
+
+        for model_config in activity_models:
             try:
-                # Get recent items
+                model = apps.get_model(model_config['app'], model_config['model'])
+                user_filter = {model_config['user_field']: user}
+
+                # Get recent items for this user
                 recent_items = None
                 if hasattr(model, 'created_at'):
-                    recent_items = model.objects.order_by('-created_at')[:5]
+                    recent_items = model.objects.filter(**user_filter).order_by('-created_at')[:5]
                 elif hasattr(model, 'uploaded_at'):
-                    recent_items = model.objects.order_by('-uploaded_at')[:5]
+                    recent_items = model.objects.filter(**user_filter).order_by('-uploaded_at')[:5]
                 elif hasattr(model, 'updated_at'):
-                    recent_items = model.objects.order_by('-updated_at')[:5]
-                
+                    recent_items = model.objects.filter(**user_filter).order_by('-updated_at')[:5]
+
                 if recent_items:
                     for item in recent_items:
                         activity_time = None
@@ -133,96 +161,23 @@ def get_recent_activity():
                             activity_time = item.uploaded_at
                         elif hasattr(item, 'updated_at'):
                             activity_time = item.updated_at
-                        
+
                         if activity_time:
                             activities.append({
-                                'type': model_name,
-                                'app': app_label,
+                                'type': model_config['model'],
+                                'app': model_config['app'],
                                 'title': str(item),
                                 'time': activity_time,
                                 'id': item.pk,
                             })
-            except Exception:
-                continue
-    
-    # Sort by time and return most recent 20
-    activities.sort(key=lambda x: x['time'], reverse=True)
-    return activities[:20]
-
-@login_required
-def search_api(request):
-    """Comprehensive search API that searches across all models"""
-    query = request.GET.get('q', '').strip()
-    
-    if not query or len(query) < 2:
-        return JsonResponse({'results': []})
-    
-    results = []
-    
-    # Search across all models dynamically
-    for model in apps.get_models():
-        if hasattr(model, '_meta'):
-            app_label = model._meta.app_label
-            model_name = model._meta.model_name
-            
-            # Skip Django's built-in models
-            if app_label in ['admin', 'auth', 'contenttypes', 'sessions']:
-                continue
-            
-            try:
-                # Build search query dynamically
-                search_fields = []
-                
-                # Get all text fields for searching
-                for field in model._meta.fields:
-                    if field.get_internal_type() in ['CharField', 'TextField']:
-                        search_fields.append(field.name)
-                
-                if search_fields:
-                    # Build Q object for OR search across all text fields
-                    q_objects = Q()
-                    for field in search_fields:
-                        q_objects |= Q(**{f'{field}__icontains': query})
-                    
-                    # Execute search
-                    matches = model.objects.filter(q_objects)[:10]
-                    
-                    for match in matches:
-                        # Try to get the best URL for the item
-                        url = '#'
-                        if hasattr(match, 'get_absolute_url'):
-                            url = match.get_absolute_url()
-                        else:
-                            # Generate URL based on app and model patterns
-                            try:
-                                url = f'/{app_label}s/{match.pk}/'
-                            except:
-                                url = '#'
-                        
-                        # Get description from the model
-                        description = ''
-                        if hasattr(match, 'description') and match.description:
-                            description = match.description[:100] + '...' if len(match.description) > 100 else match.description
-                        elif hasattr(match, 'bio') and match.bio:
-                            description = match.bio[:100] + '...' if len(match.bio) > 100 else match.bio
-                        
-                        results.append({
-                            'title': str(match),
-                            'description': description,
-                            'type': model_name.replace('_', ' ').title(),
-                            'app': app_label.title(),
-                            'url': url,
-                            'id': match.pk,
-                        })
-            
             except Exception as e:
-                # Skip models that can't be searched
+                print(f"Error getting activity for {model_config['app']}.{model_config['model']}: {e}")
                 continue
-    
-    # Sort results by relevance (title matches first)
-    results.sort(key=lambda x: (
-        0 if query.lower() in x['title'].lower() else 1,
-        x['title'].lower()
-    ))
-    
-    return JsonResponse({'results': results[:50]})  # Limit to 50 results
+
+    except Exception as e:
+        print(f"Error in get_recent_activity: {e}")
+        activities = []
+
+    # Sort by time and return most recent 10
+    activities.sort(key=lambda x: x['time'], reverse=True)
+    return activities[:10]

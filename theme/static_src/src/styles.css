@@ -9,3 +9,6 @@
   * the scope of this path.
   */
 @source "../../../**/*.{html,py,js}";
+
+/* Import dashboard styles */
+@import "./dashboard.css";

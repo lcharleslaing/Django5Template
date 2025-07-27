@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ collection.name }} - Collection{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-3xl font-bold">{{ collection.name }}</h1>
+            <div class="flex gap-2">
+                {% if user == collection.owner %}
+                    <a href="#" class="btn btn-outline btn-sm">Edit</a>
+                    <a href="#" class="btn btn-error btn-sm">Delete</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if collection.description %}
+            <p class="text-base-content/70 text-lg mb-4">{{ collection.description }}</p>
+        {% endif %}
+
+        <div class="flex items-center gap-4 text-sm text-base-content/60">
+            <span>By {{ collection.owner.username }}</span>
+            <span>Created {{ collection.created_at|date:"M j, Y" }}</span>
+            <span>Updated {{ collection.updated_at|date:"M j, Y" }}</span>
+            {% if collection.is_public %}
+                <span class="badge badge-success">Public</span>
+            {% else %}
+                <span class="badge badge-warning">Private</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if collection.prompts.all %}
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-4">{{ collection.prompts.count }} Prompt{{ collection.prompts.count|pluralize }}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for prompt in collection.prompts.all %}
+                    <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                <a href="{{ prompt.get_absolute_url }}" class="hover:text-primary">
+                                    {{ prompt.title }}
+                                </a>
+                            </h3>
+                            <p class="text-base-content/70">{{ prompt.short_description }}</p>
+
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="badge badge-outline">{{ prompt.category.name }}</span>
+                                <span class="badge badge-{{ prompt.difficulty_color }}">{{ prompt.difficulty|title }}</span>
+                                {% if prompt.is_featured %}
+                                    <span class="badge badge-primary">Featured</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex justify-between items-center mt-4 text-sm text-base-content/60">
+                                <span>By {{ prompt.author.username }}</span>
+                                <span>{{ prompt.created_at|date:"M j, Y" }}</span>
+                            </div>
+
+                            <div class="card-actions justify-end mt-4">
+                                <a href="{{ prompt.get_absolute_url }}" class="btn btn-primary btn-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">📚</div>
+            <h2 class="text-xl font-semibold mb-2">No prompts in this collection</h2>
+            <p class="text-base-content/70 mb-6">
+                This collection is empty. Add some prompts to get started.
+            </p>
+            {% if user == collection.owner %}
+                <a href="{% url 'prompts:prompt_create' %}" class="btn btn-primary">
+                    Create Your First Prompt
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

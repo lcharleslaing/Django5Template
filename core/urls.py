@@ -1,12 +1,12 @@
 from django.contrib import admin
-from django.urls import path, include   
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
-from main.views import register
+from main.views import register, home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls')),
+    path('', home, name='home'),
     # File and Image management
     path('files/', include('files.urls')),
     path('images/', include('images.urls')),
@@ -16,6 +16,10 @@ urlpatterns = [
     path('prompts/', include('prompts.urls')),
     # Suno Prompt Builder
     path('suno-prompt-builder/', include('suno_prompt_builder.urls')),
+    # Subscription management
+    path('subscriptions/', include('subscriptions.urls')),
+    # Search functionality
+    path('search/', include('search.urls')),
     # Registration page
     path('register/', register, name='register'),  # User registration
     # Login page using Django's built-in view
@@ -29,7 +33,13 @@ urlpatterns = [
     path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),  # Password reset complete
 ]
 
+# Static and Media files
+from django.conf.urls.static import static
+from django.views.static import serve
+
+# Serve static files from STATIC_ROOT (production-ready)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 # Media files (for development)
 if settings.DEBUG:
-    from django.conf.urls.static import static
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

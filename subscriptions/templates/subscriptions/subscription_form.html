@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Edit Subscription{% else %}Add Subscription{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="flex items-center mb-8">
+            <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-ghost btn-sm mr-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Subscriptions
+            </a>
+            <h1 class="text-3xl font-bold text-gray-800">
+                {% if object %}Edit Subscription{% else %}Add New Subscription{% endif %}
+            </h1>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+
+                    <!-- Basic Information -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Basic Information</h3>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Subscription Name *</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.name.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Provider</span>
+                            </label>
+                            {{ form.provider }}
+                            {% if form.provider.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.provider.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Amount *</span>
+                                </label>
+                                {{ form.amount }}
+                                {% if form.amount.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.amount.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Billing Cycle *</span>
+                                </label>
+                                {{ form.billing_cycle }}
+                                {% if form.billing_cycle.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.billing_cycle.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Dates</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Start Date *</span>
+                                </label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.start_date.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Next Due Date *</span>
+                                </label>
+                                {{ form.next_due_date }}
+                                {% if form.next_due_date.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.next_due_date.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Configuration -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">API Configuration</h3>
+
+                        <div class="form-control">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Enable API Access</span>
+                                {{ form.is_api_enabled }}
+                            </label>
+                        </div>
+
+                        <div id="api-fields" class="space-y-4 {% if not form.is_api_enabled.value %}hidden{% endif %}">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">API Base URL</span>
+                                </label>
+                                {{ form.api_base_url }}
+                                {% if form.api_base_url.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.api_base_url.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">API Key</span>
+                                </label>
+                                {{ form.api_key }}
+                                {% if form.api_key.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.api_key.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">API Token</span>
+                                </label>
+                                {{ form.api_token }}
+                                {% if form.api_token.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.api_token.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Status</h3>
+
+                        <div class="form-control">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Active Subscription</span>
+                                {{ form.is_active }}
+                            </label>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Notes</span>
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.notes.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-4 pt-6 border-t">
+                        <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if object %}Update Subscription{% else %}Create Subscription{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const apiEnabledCheckbox = document.querySelector('input[name="is_api_enabled"]');
+    const apiFields = document.getElementById('api-fields');
+
+    function toggleApiFields() {
+        if (apiEnabledCheckbox.checked) {
+            apiFields.classList.remove('hidden');
+        } else {
+            apiFields.classList.add('hidden');
+        }
+    }
+
+    apiEnabledCheckbox.addEventListener('change', toggleApiFields);
+    toggleApiFields(); // Initial state
+});
+</script>
+{% endblock %}

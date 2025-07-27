@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}My Collections - Prompts{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold">My Collections</h1>
+        <a href="{% url 'prompts:collection_create' %}" class="btn btn-primary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Create Collection
+        </a>
+    </div>
+
+    {% if collections %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for collection in collections %}
+                <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+                    <div class="card-body">
+                        <h2 class="card-title">
+                            <a href="{{ collection.get_absolute_url }}" class="hover:text-primary">
+                                {{ collection.name }}
+                            </a>
+                        </h2>
+                        {% if collection.description %}
+                            <p class="text-base-content/70">{{ collection.description|truncatechars:100 }}</p>
+                        {% endif %}
+
+                        <div class="flex items-center gap-2 mt-3">
+                            <span class="badge badge-outline">{{ collection.prompts.count }} prompts</span>
+                            {% if collection.is_public %}
+                                <span class="badge badge-success">Public</span>
+                            {% else %}
+                                <span class="badge badge-warning">Private</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex justify-between items-center mt-4 text-sm text-base-content/60">
+                            <span>Created {{ collection.created_at|date:"M j, Y" }}</span>
+                            <span>Updated {{ collection.updated_at|date:"M j, Y" }}</span>
+                        </div>
+
+                        <div class="card-actions justify-end mt-4">
+                            <a href="{{ collection.get_absolute_url }}" class="btn btn-primary btn-sm">
+                                View Collection
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">📚</div>
+            <h2 class="text-xl font-semibold mb-2">No collections yet</h2>
+            <p class="text-base-content/70 mb-6">
+                Create your first collection to organize your prompts
+            </p>
+            <a href="{% url 'prompts:collection_create' %}" class="btn btn-primary">
+                Create Your First Collection
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

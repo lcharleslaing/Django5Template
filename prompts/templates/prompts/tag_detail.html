@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tag.name }} - Prompts{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="mb-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="badge badge-lg" style="background-color: {{ tag.color }}; color: white;">
+                {{ tag.name }}
+            </div>
+            <h1 class="text-2xl font-bold">{{ tag.name }}</h1>
+        </div>
+        <p class="text-base-content/70">
+            {{ page_obj.paginator.count }} prompt{{ page_obj.paginator.count|pluralize }} tagged with "{{ tag.name }}"
+        </p>
+    </div>
+
+    {% if page_obj %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for prompt in page_obj %}
+                <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+                    <div class="card-body">
+                        <h2 class="card-title">
+                            <a href="{{ prompt.get_absolute_url }}" class="hover:text-primary">
+                                {{ prompt.title }}
+                            </a>
+                        </h2>
+                        <p class="text-base-content/70">{{ prompt.short_description }}</p>
+
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <span class="badge badge-outline">{{ prompt.category.name }}</span>
+                            <span class="badge badge-{{ prompt.difficulty_color }}">{{ prompt.difficulty|title }}</span>
+                            {% if prompt.is_featured %}
+                                <span class="badge badge-primary">Featured</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex justify-between items-center mt-4 text-sm text-base-content/60">
+                            <span>By {{ prompt.author.username }}</span>
+                            <span>{{ prompt.created_at|date:"M j, Y" }}</span>
+                        </div>
+
+                        <div class="card-actions justify-end mt-4">
+                            <a href="{{ prompt.get_absolute_url }}" class="btn btn-primary btn-sm">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center mt-8">
+                <div class="join">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn">«</a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="join-item btn btn-active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}" class="join-item btn">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="join-item btn">»</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">🏷️</div>
+            <h2 class="text-xl font-semibold mb-2">No prompts found</h2>
+            <p class="text-base-content/70 mb-6">
+                No prompts are currently tagged with "{{ tag.name }}"
+            </p>
+            <a href="{% url 'prompts:prompt_list' %}" class="btn btn-primary">
+                Browse All Prompts
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
