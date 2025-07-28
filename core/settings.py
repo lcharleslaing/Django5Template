@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5b(t4uzirw5=or^lw1@o2o4f964+8#&4f!*^z(1!klewa_4s!x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "192.168.3.147", "192.168.1.*", "192.168.0.*", "10.0.0.*"]
 
 
 # Application definition
@@ -54,7 +54,8 @@ INSTALLED_APPS = [
 #     # Add django_browser_reload only in DEBUG mode
 #     INSTALLED_APPS += ['django_browser_reload']
 
-NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+# NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"  # Windows path
+# For Mac/Linux, npm should be in PATH by default
 
 # Added: Registers the theme app for Tailwind
 TAILWIND_APP_NAME = 'theme'

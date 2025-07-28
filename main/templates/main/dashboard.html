@@ -23,10 +23,10 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                        <h1 class="text-2xl md:text-4xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
                             Welcome back, {{ user.first_name|default:user.username }}! 👋
                         </h1>
-                        <p class="text-purple-200 mt-2">Here's what's happening in your command center</p>
+                        <p class="text-purple-200 mt-2 text-sm md:text-base">Here's what's happening in your command center</p>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-3">
@@ -85,6 +85,29 @@
             </a>
             {% endfor %}
         </div>
+
+        <!-- QR Code Section for Mobile Testing -->
+        {% if qr_code_image %}
+        <div class="bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Mobile Testing QR Code</h3>
+                        <p class="text-sm text-gray-600">Scan with your iPhone to test the app on mobile</p>
+                    </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg shadow-inner">
+                    <img src="data:image/png;base64,{{ qr_code_image }}" alt="QR Code for {{ server_url }}" class="w-16 h-16">
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 break-all text-center sm:text-left">{{ server_url }}</p>
+        </div>
+        {% endif %}
 
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -265,7 +288,7 @@
                     <h2 class="text-2xl font-bold text-gray-900">⚡ Quick Actions</h2>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <a href="{% url 'prompts:prompt_create' %}" class="group bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
                         <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,6 +297,16 @@
                         </div>
                         <h3 class="font-semibold text-gray-900 mb-1">Create Prompt</h3>
                         <p class="text-sm text-gray-600">Build a new AI prompt</p>
+                    </a>
+
+                    <a href="{% url 'suno_prompt_builder:prompt_builder' %}" class="group bg-gradient-to-br from-yellow-50 to-amber-50 hover:from-yellow-100 hover:to-amber-100 border border-yellow-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                        <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Suno Builder</h3>
+                        <p class="text-sm text-gray-600">Create song prompts</p>
                     </a>
 
                     <a href="{% url 'subscriptions:subscription_create' %}" class="group bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
@@ -370,5 +403,66 @@
             }
         });
     });
+</script>
+
+<!-- QR Code Copy Functionality -->
+<script>
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        // Use the modern clipboard API
+        navigator.clipboard.writeText(text).then(function() {
+            showCopySuccess();
+        }).catch(function(err) {
+            console.error('Could not copy text: ', err);
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess();
+        }
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+function showCopySuccess() {
+    // Create a temporary success message
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = `
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        Copied!
+    `;
+    button.classList.add('btn-success');
+    button.classList.remove('btn-primary');
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-primary');
+    }, 2000);
+}
 </script>
 {% endblock %}

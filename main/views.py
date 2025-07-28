@@ -26,15 +26,103 @@ def home(request):
     stats = get_dashboard_stats(request.user)
     recent_activity = get_recent_activity(request.user)
 
-
+    # Generate QR code for mobile testing
+    import qrcode
+    from io import BytesIO
+    import base64
+    import socket
+    
+    # Get the current server URL
+    protocol = 'https' if request.is_secure() else 'http'
+    
+    # Get the actual IP address for mobile access
+    try:
+        # Get the local IP address
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        server_url = f"{protocol}://{local_ip}:8000"
+    except:
+        # Fallback to request host
+        host = request.get_host()
+        server_url = f"{protocol}://{host}"
+    
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(server_url)
+    qr.make(fit=True)
+    
+    # Create QR code image
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert to base64 for embedding in HTML
+    buffer = BytesIO()
+    img.save(buffer, format='PNG')
+    qr_image_base64 = base64.b64encode(buffer.getvalue()).decode()
 
     context = {
         'stats': stats,
         'recent_activity': recent_activity,
+        'server_url': server_url,
+        'qr_code_image': qr_image_base64,
         'year': datetime.now().year,
         'timestamp': timezone.now().timestamp(),  # For cache busting
     }
     return render(request, 'main/dashboard.html', context)
+
+def home_public(request):
+    """Public home page with QR code for mobile testing"""
+    import qrcode
+    from io import BytesIO
+    import base64
+    import socket
+    
+    # Get the current server URL
+    protocol = 'https' if request.is_secure() else 'http'
+    
+    # Get the actual IP address for mobile access
+    try:
+        # Get the local IP address
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        server_url = f"{protocol}://{local_ip}:8000"
+    except:
+        # Fallback to request host
+        host = request.get_host()
+        server_url = f"{protocol}://{host}"
+    
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(server_url)
+    qr.make(fit=True)
+    
+    # Create QR code image
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert to base64 for embedding in HTML
+    buffer = BytesIO()
+    img.save(buffer, format='PNG')
+    qr_image_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    context = {
+        'server_url': server_url,
+        'qr_code_image': qr_image_base64,
+        'year': datetime.now().year,
+    }
+    return render(request, 'main/home.html', context)
 
 def get_dashboard_stats(user):
     """Get statistics for all apps and models with user-specific data"""
@@ -55,6 +143,7 @@ def get_dashboard_stats(user):
                 'app_label': 'prompts',
                 'user_field': 'author'
             },
+
             'subscriptions': {
                 'label': 'Subscriptions',
                 'icon_bg': 'from-purple-500 to-pink-600',

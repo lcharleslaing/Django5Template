@@ -6,3 +6,5 @@ sqlparse
 tzdata
 Pillow
 requests
+whitenoise
+qrcode[pil]
