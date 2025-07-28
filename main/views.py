@@ -31,10 +31,10 @@ def home(request):
     from io import BytesIO
     import base64
     import socket
-    
+
     # Get the current server URL
     protocol = 'https' if request.is_secure() else 'http'
-    
+
     # Get the actual IP address for mobile access
     try:
         # Get the local IP address
@@ -47,7 +47,7 @@ def home(request):
         # Fallback to request host
         host = request.get_host()
         server_url = f"{protocol}://{host}"
-    
+
     # Generate QR code
     qr = qrcode.QRCode(
         version=1,
@@ -57,10 +57,10 @@ def home(request):
     )
     qr.add_data(server_url)
     qr.make(fit=True)
-    
+
     # Create QR code image
     img = qr.make_image(fill_color="black", back_color="white")
-    
+
     # Convert to base64 for embedding in HTML
     buffer = BytesIO()
     img.save(buffer, format='PNG')
@@ -82,10 +82,10 @@ def home_public(request):
     from io import BytesIO
     import base64
     import socket
-    
+
     # Get the current server URL
     protocol = 'https' if request.is_secure() else 'http'
-    
+
     # Get the actual IP address for mobile access
     try:
         # Get the local IP address
@@ -98,7 +98,7 @@ def home_public(request):
         # Fallback to request host
         host = request.get_host()
         server_url = f"{protocol}://{host}"
-    
+
     # Generate QR code
     qr = qrcode.QRCode(
         version=1,
@@ -108,15 +108,15 @@ def home_public(request):
     )
     qr.add_data(server_url)
     qr.make(fit=True)
-    
+
     # Create QR code image
     img = qr.make_image(fill_color="black", back_color="white")
-    
+
     # Convert to base64 for embedding in HTML
     buffer = BytesIO()
     img.save(buffer, format='PNG')
     qr_image_base64 = base64.b64encode(buffer.getvalue()).decode()
-    
+
     context = {
         'server_url': server_url,
         'qr_code_image': qr_image_base64,
@@ -167,6 +167,14 @@ def get_dashboard_stats(user):
                 'model_name': 'image',
                 'app_label': 'images',
                 'user_field': 'uploaded_by'
+            },
+            'song_prompts': {
+                'label': 'Song Prompts',
+                'icon_bg': 'from-yellow-500 to-amber-600',
+                'icon_path': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />',
+                'model_name': 'songprompt',
+                'app_label': 'suno_prompt_builder',
+                'user_field': None
             }
         }
 
@@ -175,22 +183,36 @@ def get_dashboard_stats(user):
             try:
                 model = apps.get_model(config['app_label'], config['model_name'])
 
-                # Get user-specific count
-                user_filter = {config['user_field']: user}
-                count = model.objects.filter(**user_filter).count()
+                # Get count (user-specific or global)
+                if config['user_field']:
+                    user_filter = {config['user_field']: user}
+                    count = model.objects.filter(**user_filter).count()
+                else:
+                    # For models without user field, get global count
+                    count = model.objects.count()
 
                 # Get new this week count
                 week_ago = timezone.now() - timedelta(days=7)
                 if hasattr(model, 'created_at'):
-                    new_this_week = model.objects.filter(
-                        **user_filter,
-                        created_at__gte=week_ago
-                    ).count()
+                    if config['user_field']:
+                        new_this_week = model.objects.filter(
+                            **user_filter,
+                            created_at__gte=week_ago
+                        ).count()
+                    else:
+                        new_this_week = model.objects.filter(
+                            created_at__gte=week_ago
+                        ).count()
                 elif hasattr(model, 'uploaded_at'):
-                    new_this_week = model.objects.filter(
-                        **user_filter,
-                        uploaded_at__gte=week_ago
-                    ).count()
+                    if config['user_field']:
+                        new_this_week = model.objects.filter(
+                            **user_filter,
+                            uploaded_at__gte=week_ago
+                        ).count()
+                    else:
+                        new_this_week = model.objects.filter(
+                            uploaded_at__gte=week_ago
+                        ).count()
                 else:
                     new_this_week = 0
 

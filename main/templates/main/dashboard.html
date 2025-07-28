@@ -48,13 +48,14 @@
     <div class="max-w-7xl mx-auto px-6 py-8">
 
         <!-- Stats Overview Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             {% for stat in stats %}
             <a href="
                 {% if stat.label == 'AI Prompts' %}{% url 'prompts:prompt_list' %}
                 {% elif stat.label == 'Subscriptions' %}{% url 'subscriptions:subscription_list' %}
                 {% elif stat.label == 'Files' %}{% url 'files:file_list' %}
                 {% elif stat.label == 'Images' %}{% url 'images:image_list' %}
+                {% elif stat.label == 'Song Prompts' %}{% url 'suno_prompt_builder:prompt_builder' %}
                 {% else %}#{% endif %}
             " class="group bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6 hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 cursor-pointer block clickable-tile">
                 <div class="flex items-center justify-between">
@@ -134,7 +135,7 @@
                         </a>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <a href="{% url 'prompts:prompt_list' %}" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 hover:shadow-md transition-shadow cursor-pointer block clickable-tile">
                             <div class="flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -150,6 +151,26 @@
                                                 {{ stat.count }}
                                             {% endif %}
                                         {% endfor %} total
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'suno_prompt_builder:prompt_builder' %}" class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-4 border border-yellow-100 hover:shadow-md transition-shadow cursor-pointer block">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Song Prompts</h3>
+                                    <p class="text-sm text-gray-600">
+                                        {% for stat in stats %}
+                                            {% if stat.label == 'Song Prompts' %}
+                                                {{ stat.count }}
+                                            {% endif %}
+                                        {% endfor %} created
                                     </p>
                                 </div>
                             </div>
@@ -431,7 +452,7 @@ function fallbackCopyTextToClipboard(text) {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     try {
         const successful = document.execCommand('copy');
         if (successful) {
@@ -440,7 +461,7 @@ function fallbackCopyTextToClipboard(text) {
     } catch (err) {
         console.error('Fallback: Oops, unable to copy', err);
     }
-    
+
     document.body.removeChild(textArea);
 }
 
@@ -448,7 +469,7 @@ function showCopySuccess() {
     // Create a temporary success message
     const button = event.target.closest('button');
     const originalText = button.innerHTML;
-    
+
     button.innerHTML = `
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -457,7 +478,7 @@ function showCopySuccess() {
     `;
     button.classList.add('btn-success');
     button.classList.remove('btn-primary');
-    
+
     setTimeout(() => {
         button.innerHTML = originalText;
         button.classList.remove('btn-success');
