@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Equipment BOM Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Equipment BOM Dashboard</h1>
+        <p class="text-gray-600 text-lg">Manage your Bill of Materials for industrial equipment</p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <a href="{% url 'equipment_bom:import_excel' %}" class="btn btn-primary btn-lg">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+            </svg>
+            Import Excel
+        </a>
+        <a href="{% url 'equipment_bom:equipment_list' %}" class="btn btn-secondary btn-lg">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            View Equipment
+        </a>
+        <a href="{% url 'equipment_bom:job_list' %}" class="btn btn-accent btn-lg">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            Manage Jobs
+        </a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stat bg-primary text-primary-content">
+            <div class="stat-figure text-secondary">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Total Jobs</div>
+            <div class="stat-value">{{ total_jobs }}</div>
+            <div class="stat-desc">Active projects</div>
+        </div>
+
+        <div class="stat bg-secondary text-secondary-content">
+            <div class="stat-figure text-primary">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Equipment Items</div>
+            <div class="stat-value">{{ total_equipment }}</div>
+            <div class="stat-desc">Total equipment</div>
+        </div>
+
+        <div class="stat bg-accent text-accent-content">
+            <div class="stat-figure text-secondary">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Materials</div>
+            <div class="stat-value">{{ total_materials }}</div>
+            <div class="stat-desc">Available materials</div>
+        </div>
+
+        <div class="stat bg-info text-info-content">
+            <div class="stat-figure text-secondary">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Recent Imports</div>
+            <div class="stat-value">{{ recent_imports|length }}</div>
+            <div class="stat-desc">Last 5 imports</div>
+        </div>
+    </div>
+    
+    <!-- Create New Records -->
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <h3 class="card-title text-xl mb-4">Create New Records</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{% url 'equipment_bom:job_create' %}" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Job
+                </a>
+                
+                <a href="{% url 'equipment_bom:equipment_create' %}?type=heater" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Heater
+                </a>
+                
+                <a href="{% url 'equipment_bom:equipment_create' %}?type=tank" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Tank
+                </a>
+                
+                <a href="{% url 'equipment_bom:equipment_create' %}?type=pump" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Pump
+                </a>
+                
+                <a href="{% url 'equipment_bom:equipment_create' %}?type=economizer" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Economizer
+                </a>
+                
+                <a href="{% url 'equipment_bom:material_create' %}" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Material
+                </a>
+                
+                <a href="{% url 'equipment_bom:bom_template_create' %}" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New BOM Template
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Equipment by Type Chart -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Equipment by Type</h2>
+                <div class="space-y-2">
+                    {% for type in equipment_by_type %}
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">{{ type.equipment_type__name }}</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-32 bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: {{ type.count|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold">{{ type.count }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-center py-4">No equipment data available</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Jobs -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Recent Jobs</h2>
+                <div class="space-y-3">
+                    {% for job in recent_jobs %}
+                    <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                        <div>
+                            <h3 class="font-semibold">{{ job.job_number }}</h3>
+                            <p class="text-sm text-gray-600">{{ job.description|truncatechars:50 }}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="badge badge-{{ job.status|yesno:'success,warning,info' }}">{{ job.status|title }}</span>
+                            <p class="text-xs text-gray-500 mt-1">{{ job.created_at|date:"M d" }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-center py-4">No jobs available</p>
+                    {% endfor %}
+                </div>
+                <div class="card-actions justify-end mt-4">
+                    <a href="{% url 'equipment_bom:job_list' %}" class="btn btn-primary btn-sm">View All Jobs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Equipment and Imports -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <!-- Recent Equipment -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Recent Equipment</h2>
+                <div class="space-y-3">
+                    {% for equipment in recent_equipment %}
+                    <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                        <div>
+                            <h3 class="font-semibold">{{ equipment.item_number }}</h3>
+                            <p class="text-sm text-gray-600">{{ equipment.description|truncatechars:50 }}</p>
+                            <p class="text-xs text-gray-500">{{ equipment.equipment_type.name }}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="badge badge-{{ equipment.status|yesno:'success,warning,info' }}">{{ equipment.status|title }}</span>
+                            <p class="text-xs text-gray-500 mt-1">{{ equipment.created_at|date:"M d" }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-center py-4">No equipment available</p>
+                    {% endfor %}
+                </div>
+                <div class="card-actions justify-end mt-4">
+                    <a href="{% url 'equipment_bom:equipment_list' %}" class="btn btn-primary btn-sm">View All Equipment</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Imports -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Recent Imports</h2>
+                <div class="space-y-3">
+                    {% for import_log in recent_imports %}
+                    <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                        <div>
+                            <h3 class="font-semibold">{{ import_log.file_name|truncatechars:30 }}</h3>
+                            <p class="text-sm text-gray-600">{{ import_log.equipment_type.name }}</p>
+                            <p class="text-xs text-gray-500">by {{ import_log.imported_by.username }}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="badge badge-{{ import_log.status|yesno:'success,warning,error' }}">{{ import_log.status|title }}</span>
+                            <p class="text-xs text-gray-500 mt-1">{{ import_log.import_date|date:"M d H:i" }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-center py-4">No imports available</p>
+                    {% endfor %}
+                </div>
+                <div class="card-actions justify-end mt-4">
+                    <a href="{% url 'equipment_bom:import_logs' %}" class="btn btn-primary btn-sm">View All Imports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Quick Navigation</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="{% url 'equipment_bom:material_list' %}" class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+                Materials
+            </a>
+            <a href="{% url 'equipment_bom:bom_template_list' %}" class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                BOM Templates
+            </a>
+            <a href="{% url 'equipment_bom:import_excel' %}" class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+                Import Data
+            </a>
+            <a href="{% url 'equipment_bom:export_excel' 1 %}" class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Export Data
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Materials - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div class="text-center md:text-left">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Materials</h1>
+            <p class="text-gray-600 text-lg">View all available materials</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <a href="{% url 'equipment_bom:material_create' %}" class="btn btn-secondary">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create New Material
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <form method="get" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Search -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Search</span>
+                        </label>
+                        <input type="text" name="q" value="{{ search_query }}" 
+                               placeholder="Search materials..." 
+                               class="input input-bordered w-full">
+                    </div>
+
+                    <!-- Material Type Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Material Type</span>
+                        </label>
+                        <select name="type" class="select select-bordered w-full">
+                            <option value="">All Types</option>
+                            {% for material_type in material_types %}
+                            <option value="{{ material_type }}" 
+                                    {% if material_type_filter == material_type %}selected{% endif %}>
+                                {{ material_type }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">&nbsp;</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-1">Filter</button>
+                            <a href="{% url 'equipment_bom:material_list' %}" class="btn btn-outline">Clear</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Materials Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for material in page_obj %}
+        <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-3">
+                    <h3 class="card-title text-lg">{{ material.code }}</h3>
+                    <span class="badge badge-outline">{{ material.material_type }}</span>
+                </div>
+                
+                <h4 class="font-semibold text-gray-800 mb-2">{{ material.name }}</h4>
+                
+                {% if material.description %}
+                <p class="text-gray-600 text-sm mb-4">{{ material.description|truncatechars:100 }}</p>
+                {% endif %}
+                
+                <div class="card-actions justify-end">
+                    <a href="#" class="btn btn-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body text-center py-12">
+                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-600 mb-2">No Materials Found</h3>
+                    <p class="text-gray-500">No materials have been added yet.</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center mt-8">
+        <div class="join">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if material_type_filter %}&type={{ material_type_filter }}{% endif %}" 
+               class="join-item btn">«</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if material_type_filter %}&type={{ material_type_filter }}{% endif %}" 
+               class="join-item btn">‹</a>
+            {% endif %}
+            
+            <span class="join-item btn btn-disabled">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if material_type_filter %}&type={{ material_type_filter }}{% endif %}" 
+               class="join-item btn">›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if material_type_filter %}&type={{ material_type_filter }}{% endif %}" 
+               class="join-item btn">»</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

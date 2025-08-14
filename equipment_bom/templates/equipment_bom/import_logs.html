@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Import Logs - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Import Logs</h1>
+        <p class="text-gray-600 text-lg">Track all Excel import activities</p>
+    </div>
+
+    <!-- Import Logs Table -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Equipment Type</th>
+                            <th>Status</th>
+                            <th>Records</th>
+                            <th>Imported By</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for import_log in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="font-medium">{{ import_log.file_name|truncatechars:30 }}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-outline">{{ import_log.equipment_type.name }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ import_log.status|yesno:'success,warning,error' }}">
+                                    {{ import_log.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-sm">
+                                    <div>Processed: {{ import_log.records_processed }}</div>
+                                    <div>Created: {{ import_log.records_created }}</div>
+                                    <div>Updated: {{ import_log.records_updated }}</div>
+                                </div>
+                            </td>
+                            <td>{{ import_log.imported_by.username }}</td>
+                            <td>{{ import_log.import_date|date:"M d, H:i" }}</td>
+                            <td>
+                                <a href="{% url 'equipment_bom:import_log_detail' import_log.id %}" 
+                                   class="btn btn-ghost btn-xs">View Details</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-gray-500">
+                                No import logs available yet. Start by importing your first Excel file!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="flex justify-center mt-6">
+                <div class="join">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn">‹</a>
+                    {% endif %}
+                    
+                    <span class="join-item btn btn-disabled">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="join-item btn">›</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 text-center">
+        <a href="{% url 'equipment_bom:import_excel' %}" class="btn btn-primary btn-lg">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+            </svg>
+            Import New Excel File
+        </a>
+    </div>
+</div>
+{% endblock %}

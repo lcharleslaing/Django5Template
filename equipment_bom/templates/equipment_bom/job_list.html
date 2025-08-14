@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Job List - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Job Management</h1>
+            <p class="text-gray-600">Manage and track all projects and jobs</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex gap-2">
+            <a href="{% url 'equipment_bom:job_create' %}" class="btn btn-secondary">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create New Job
+            </a>
+            <a href="{% url 'equipment_bom:import_excel' %}" class="btn btn-primary">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+                Import Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <form method="get" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Search -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Search</span>
+                        </label>
+                        <input type="text" name="q" value="{{ search_query }}" 
+                               placeholder="Search jobs..." 
+                               class="input input-bordered w-full">
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Status</span>
+                        </label>
+                        <select name="status" class="select select-bordered w-full">
+                            <option value="">All Statuses</option>
+                            {% for status_choice in status_choices %}
+                            <option value="{{ status_choice.0 }}" 
+                                    {% if status_filter == status_choice.0 %}selected{% endif %}>
+                                {{ status_choice.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">&nbsp;</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-1">Filter</button>
+                            <a href="{% url 'equipment_bom:job_list' %}" class="btn btn-outline">Clear</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="mb-4">
+        <p class="text-gray-600">
+            Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} jobs
+            {% if search_query or status_filter %}
+            (filtered results)
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Job List -->
+    <div class="space-y-4">
+        {% for job in page_obj %}
+        <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+            <div class="card-body">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <!-- Job Info -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h2 class="card-title text-xl">{{ job.job_number }}</h2>
+                            <span class="badge badge-{{ job.status|yesno:'success,warning,info' }}">
+                                {{ job.status|title }}
+                            </span>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-3">{{ job.description }}</p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="font-semibold text-gray-600">Customer:</span>
+                                <span>{{ job.customer|default:"N/A" }}</span>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-gray-600">Project Manager:</span>
+                                <span>{{ job.project_manager.username|default:"N/A" }}</span>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-gray-600">Start Date:</span>
+                                <span>{{ job.start_date|date:"M d, Y"|default:"Not set" }}</span>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-gray-600">End Date:</span>
+                                <span>{{ job.end_date|date:"M d, Y"|default:"Not set" }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Equipment Count -->
+                        <div class="mt-3 p-3 bg-base-200 rounded-lg">
+                            <h4 class="font-semibold text-sm mb-2">Equipment Summary:</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div><span class="font-medium">Total Items:</span> {{ job.equipment_items.count }}</div>
+                                {% for eq_type in job.equipment_items.values_list|slice:":4" %}
+                                <div><span class="font-medium">{{ eq_type.0 }}:</span> {{ eq_type.1 }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-col gap-2">
+                        <a href="{% url 'equipment_bom:job_detail' job.id %}" 
+                           class="btn btn-primary btn-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            View Details
+                        </a>
+                        
+                        <a href="{% url 'equipment_bom:equipment_list' %}?job={{ job.id }}" 
+                           class="btn btn-outline btn-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            View Equipment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-600 mb-2">No Jobs Found</h3>
+                <p class="text-gray-500 mb-4">
+                    {% if search_query or status_filter %}
+                    No jobs match your current filters. Try adjusting your search criteria.
+                    {% else %}
+                    No jobs have been created yet. Start by importing your Excel data.
+                    {% endif %}
+                </p>
+                {% if not search_query and not status_filter %}
+                <a href="{% url 'equipment_bom:import_excel' %}" class="btn btn-primary">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    Import Excel Data
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center mt-8">
+        <div class="join">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+               class="join-item btn">«</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+               class="join-item btn">‹</a>
+            {% endif %}
+            
+            <span class="join-item btn btn-disabled">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+               class="join-item btn">›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" 
+               class="join-item btn">»</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

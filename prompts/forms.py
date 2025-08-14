@@ -77,6 +77,10 @@ class PromptForm(forms.ModelForm):
             self.fields['tags'].queryset = Tag.objects.filter(
                 prompts__is_public=True
             ).distinct()
+        else:
+            # Staff users can see all categories and tags
+            self.fields['category'].queryset = Category.objects.all()
+            self.fields['tags'].queryset = Tag.objects.all()
 
 class CategoryForm(forms.ModelForm):
     class Meta:

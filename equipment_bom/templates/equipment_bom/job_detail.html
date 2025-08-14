@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ job.job_number }} - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ job.job_number }}</h1>
+            <p class="text-gray-600 text-lg">{{ job.description }}</p>
+        </div>
+
+        <!-- Job Details -->
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Job Information</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="font-medium text-gray-600">Job Number:</span>
+                                <span class="ml-2">{{ job.job_number }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Description:</span>
+                                <span class="ml-2">{{ job.description }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Status:</span>
+                                <span class="badge badge-{{ job.status|yesno:'success,warning,info' }} ml-2">
+                                    {{ job.status|title }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Customer:</span>
+                                <span class="ml-2">{{ job.customer|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Project Details</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="font-medium text-gray-600">Project Manager:</span>
+                                <span class="ml-2">{{ job.project_manager.username|default:"N/A" }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Start Date:</span>
+                                <span class="ml-2">{{ job.start_date|date:"M d, Y"|default:"Not set" }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">End Date:</span>
+                                <span class="ml-2">{{ job.end_date|date:"M d, Y"|default:"Not set" }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Created:</span>
+                                <span class="ml-2">{{ job.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Summary -->
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold mb-4">Equipment Summary</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="stat bg-primary text-primary-content">
+                        <div class="stat-title">Total Equipment</div>
+                        <div class="stat-value">{{ job.equipment_items.count }}</div>
+                    </div>
+                    <div class="stat bg-secondary text-secondary-content">
+                        <div class="stat-title">Active Items</div>
+                        <div class="stat-value">{{ job.equipment_items.filter.status='active'|length }}</div>
+                    </div>
+                    <div class="stat bg-accent text-accent-content">
+                        <div class="stat-title">Completed Items</div>
+                        <div class="stat-value">{{ job.equipment_items.filter.status='completed'|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-center gap-4">
+            <a href="{% url 'equipment_bom:job_list' %}" class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Jobs
+            </a>
+            
+            <a href="{% url 'equipment_bom:equipment_list' %}?job={{ job.id }}" class="btn btn-primary">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                View Equipment
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

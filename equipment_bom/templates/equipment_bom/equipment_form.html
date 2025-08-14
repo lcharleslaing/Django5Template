@@ -1,0 +1,423 @@
+{% extends 'equipment_bom/base_form.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ title }}</h1>
+            <p class="text-gray-600 text-lg">Create or edit equipment specifications</p>
+        </div>
+
+        <!-- Form -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.non_field_errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Basic Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.item_number.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.item_number }}
+                            {% if form.item_number.errors %}
+                            <label class="label">
+                                {% for error in form.item_number.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.equipment_type.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.equipment_type }}
+                            {% if form.equipment_type.errors %}
+                            <label class="label">
+                                {% for error in form.equipment_type.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">
+                                {{ form.description.label }}
+                                <span class="text-error">*</span>
+                            </span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <label class="label">
+                            {% for error in form.description.errors %}
+                            <span class="label-text-alt text-error">{{ error }}</span>
+                            {% endfor %}
+                        </label>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.job.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.job }}
+                            {% if form.job.errors %}
+                            <label class="label">
+                                {% for error in form.job.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.product_type.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.product_type }}
+                            {% if form.product_type.errors %}
+                            <label class="label">
+                                {% for error in form.product_type.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Dimensions -->
+                    <div class="divider">Dimensions</div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.diameter.label }}</span>
+                            </label>
+                            {{ form.diameter }}
+                            {% if form.diameter.errors %}
+                            <label class="label">
+                                {% for error in form.diameter.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.height.label }}</span>
+                            </label>
+                            {{ form.height }}
+                            {% if form.height.errors %}
+                            <label class="label">
+                                {% for error in form.height.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.length.label }}</span>
+                            </label>
+                            {{ form.length }}
+                            {% if form.length.errors %}
+                            <label class="label">
+                                {% for error in form.length.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.width.label }}</span>
+                            </label>
+                            {{ form.width }}
+                            {% if form.width.errors %}
+                            <label class="label">
+                                {% for error in form.width.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Material -->
+                    <div class="divider">Material</div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">{{ form.primary_material.label }}</span>
+                        </label>
+                        {{ form.primary_material }}
+                        {% if form.primary_material.errors %}
+                        <label class="label">
+                            {% for error in form.primary_material.errors %}
+                            <span class="label-text-alt text-error">{{ error }}</span>
+                            {% endfor %}
+                        </label>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Equipment Type Specific Fields -->
+                    {% if 'heater' in equipment_type|lower %}
+                    <div class="divider">Heater Specifications</div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.heater_type.label }}</span>
+                            </label>
+                            {{ form.heater_type }}
+                            {% if form.heater_type.errors %}
+                            <label class="label">
+                                {% for error in form.heater_type.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.capacity.label }}</span>
+                            </label>
+                            {{ form.capacity }}
+                            {% if form.capacity.errors %}
+                            <label class="label">
+                                {% for error in form.capacity.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.pressure_rating.label }}</span>
+                            </label>
+                            {{ form.pressure_rating }}
+                            {% if form.pressure_rating.errors %}
+                            <label class="label">
+                                {% for error in form.pressure_rating.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if 'tank' in equipment_type|lower %}
+                    <div class="divider">Tank Specifications</div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.tank_type.label }}</span>
+                            </label>
+                            {{ form.tank_type }}
+                            {% if form.tank_type.errors %}
+                            <label class="label">
+                                {% for error in form.tank_type.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.working_pressure.label }}</span>
+                            </label>
+                            {{ form.working_pressure }}
+                            {% if form.working_pressure.errors %}
+                            <label class="label">
+                                {% for error in form.working_pressure.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if 'pump' in equipment_type|lower %}
+                    <div class="divider">Pump Specifications</div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.pump_type.label }}</span>
+                            </label>
+                            {{ form.pump_type }}
+                            {% if form.pump_type.errors %}
+                            <label class="label">
+                                {% for error in form.pump_type.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.flow_rate.label }}</span>
+                            </label>
+                            {{ form.flow_rate }}
+                            {% if form.flow_rate.errors %}
+                            <label class="label">
+                                {% for error in form.flow_rate.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.head.label }}</span>
+                            </label>
+                            {{ form.head }}
+                            {% if form.head.errors %}
+                            <label class="label">
+                                {% for error in form.head.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.power.label }}</span>
+                            </label>
+                            {{ form.power }}
+                            {% if form.power.errors %}
+                            <label class="label">
+                                {% for error in form.power.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if 'economizer' in equipment_type|lower %}
+                    <div class="divider">Stack Economizer Specifications</div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.economizer_type.label }}</span>
+                            </label>
+                            {{ form.economizer_type }}
+                            {% if form.economizer_type.errors %}
+                            <label class="label">
+                                {% for error in form.economizer_type.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.efficiency.label }}</span>
+                            </label>
+                            {{ form.efficiency }}
+                            {% if form.efficiency.errors %}
+                            <label class="label">
+                                {% for error in form.efficiency.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.inlet_temp.label }}</span>
+                            </label>
+                            {{ form.inlet_temp }}
+                            {% if form.inlet_temp.errors %}
+                            <label class="label">
+                                {% for error in form.inlet_temp.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">{{ form.outlet_temp.label }}</span>
+                            </label>
+                            {{ form.outlet_temp }}
+                            {% if form.outlet_temp.errors %}
+                            <label class="label">
+                                {% for error in form.outlet_temp.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-center gap-4 pt-6">
+                        <a href="{% url 'equipment_bom:equipment_list' %}" class="btn btn-outline">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {{ submit_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'equipment_bom/base_form.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ title }}</h1>
+            <p class="text-gray-600 text-lg">Create or edit job information</p>
+        </div>
+
+        <!-- Form -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.non_field_errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Job Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.job_number.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.job_number }}
+                            {% if form.job_number.errors %}
+                            <label class="label">
+                                {% for error in form.job_number.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.status.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <label class="label">
+                                {% for error in form.status.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">
+                                {{ form.description.label }}
+                            </span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <label class="label">
+                            {% for error in form.description.errors %}
+                            <span class="label-text-alt text-error">{{ error }}</span>
+                            {% endfor %}
+                        </label>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.customer.label }}
+                                </span>
+                            </label>
+                            {{ form.customer }}
+                            {% if form.customer.errors %}
+                            <label class="label">
+                                {% for error in form.customer.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.project_manager.label }}
+                                </span>
+                            </label>
+                            {{ form.project_manager }}
+                            {% if form.project_manager.errors %}
+                            <label class="label">
+                                {% for error in form.project_manager.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.start_date.label }}
+                                </span>
+                            </label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <label class="label">
+                                {% for error in form.start_date.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.end_date.label }}
+                                </span>
+                            </label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                            <label class="label">
+                                {% for error in form.end_date.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-center gap-4 pt-6">
+                        <a href="{% url 'equipment_bom:job_list' %}" class="btn btn-outline">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {{ submit_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

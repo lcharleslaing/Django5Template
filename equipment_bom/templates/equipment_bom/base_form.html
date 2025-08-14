@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ title }}</h1>
+            {% if form.description %}
+            <p class="text-gray-600 text-lg">{{ form.description }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Form -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.non_field_errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% for field in form %}
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                <span class="text-error">*</span>
+                                {% endif %}
+                            </span>
+                        </label>
+                        
+                        {{ field }}
+                        
+                        {% if field.help_text %}
+                        <label class="label">
+                            <span class="label-text-alt text-gray-600">{{ field.help_text }}</span>
+                        </label>
+                        {% endif %}
+                        
+                        {% if field.errors %}
+                        <label class="label">
+                            {% for error in field.errors %}
+                            <span class="label-text-alt text-error">{{ error }}</span>
+                            {% endfor %}
+                        </label>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-center gap-4 pt-6">
+                        <a href="{{ request.META.HTTP_REFERER|default:'javascript:history.back()' }}" 
+                           class="btn btn-outline">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {{ submit_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom styling for form fields */
+.form-control input,
+.form-control select,
+.form-control textarea {
+    @apply input input-bordered w-full;
+}
+
+.form-control textarea {
+    @apply textarea textarea-bordered w-full;
+}
+
+.form-control .input-error {
+    @apply input-error;
+}
+
+.form-control .textarea-error {
+    @apply textarea-error;
+}
+</style>
+{% endblock %}

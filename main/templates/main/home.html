@@ -83,7 +83,7 @@
                             <a href="{% url 'surveys:my_invites' %}" class="btn btn-primary btn-sm">My Invites</a>
                             <a href="{% url 'surveys:list' %}" class="btn btn-outline btn-sm">Browse</a>
                             {% if perms.surveys.add_survey or user.is_superuser %}
-                                <a href="{% url 'surveys:builder' %}" class="btn btn-secondary btn-sm">Create Survey</a>
+                                <a href="{% url 'surveys:survey_create' %}" class="btn btn-secondary btn-sm">Create Survey</a>
                             {% endif %}
                         </div>
                     </div>

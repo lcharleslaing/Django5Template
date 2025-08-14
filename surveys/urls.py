@@ -22,7 +22,7 @@ urlpatterns = [
 
     # Admin / Builder
     path('admin/', views.survey_admin_list, name='survey_admin_list'),
-    path('admin/create/', views.survey_create, name='builder'),
+    path('admin/create/', views.survey_create, name='survey_create'),
     path('admin/ai/', views.ai_builder, name='ai_builder'),
     path('admin/<int:pk>/edit/', views.survey_edit, name='survey_edit'),
     path('admin/<int:pk>/publish/', views.survey_publish, name='publish'),

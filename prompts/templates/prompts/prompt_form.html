@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ title }}</h1>
+            <p class="text-gray-600 text-lg">
+                {% if prompt %}
+                    Edit your prompt to make it even better
+                {% else %}
+                    Create a new AI prompt to share with the community
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Title -->
+                <div class="form-control">
+                    <label for="{{ form.title.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Title *</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="text-error text-sm mt-1">{{ form.title.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="form-control">
+                    <label for="{{ form.description.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Description *</span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="text-error text-sm mt-1">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div class="form-control">
+                    <label for="{{ form.content.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Prompt Content *</span>
+                    </label>
+                    {{ form.content }}
+                    <div class="label">
+                        <span class="label-text-alt text-gray-500">This is the actual prompt text that will be used with AI models</span>
+                    </div>
+                    {% if form.content.errors %}
+                        <div class="text-error text-sm mt-1">{{ form.content.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Category and Type Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Category -->
+                    <div class="form-control">
+                        <label for="{{ form.category.id_for_label }}" class="label">
+                            <span class="label-text font-semibold">Category</span>
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Prompt Type -->
+                    <div class="form-control">
+                        <label for="{{ form.prompt_type.id_for_label }}" class="label">
+                            <span class="label-text font-semibold">Prompt Type</span>
+                        </label>
+                        {{ form.prompt_type }}
+                        {% if form.prompt_type.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.prompt_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Difficulty and Tags Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Difficulty -->
+                    <div class="form-control">
+                        <label for="{{ form.difficulty.id_for_label }}" class="label">
+                            <span class="label-text font-semibold">Difficulty</span>
+                        </label>
+                        {{ form.difficulty }}
+                        {% if form.difficulty.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.difficulty.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="form-control">
+                        <label for="{{ form.tags.id_for_label }}" class="label">
+                            <span class="label-text font-semibold">Tags</span>
+                        </label>
+                        {{ form.tags }}
+                        <div class="label">
+                            <span class="label-text-alt text-gray-500">Hold Ctrl/Cmd to select multiple tags</span>
+                        </div>
+                        {% if form.tags.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.tags.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Example Input and Output -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Example Input -->
+                    <div class="form-control">
+                        <label for="{{ form.example_input.id_for_label }}" class="label">
+                            <span class="label-text font-semibold">Example Input</span>
+                        </label>
+                        {{ form.example_input }}
+                        <div class="label">
+                            <span class="label-text-alt text-gray-500">Show users what kind of input to provide</span>
+                        </div>
+                        {% if form.example_input.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.example_input.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Example Output -->
+                    <div class="form-control">
+                        <label for="{{ form.example_output.id_for_label }}" class="label">
+                            <span class="label-text font-semibold">Example Output</span>
+                        </label>
+                        {{ form.example_output }}
+                        <div class="label">
+                            <span class="label-text-alt text-gray-500">Show users what to expect</span>
+                        </div>
+                        {% if form.example_output.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.example_output.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Context Notes -->
+                <div class="form-control">
+                    <label for="{{ form.context_notes.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Context Notes</span>
+                    </label>
+                    {{ form.context_notes }}
+                    <div class="label">
+                        <span class="label-text-alt text-gray-500">Additional instructions or context for users</span>
+                    </div>
+                    {% if form.context_notes.errors %}
+                        <div class="text-error text-sm mt-1">{{ form.context_notes.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Checkboxes Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Public -->
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text font-semibold">Make Public</span>
+                            {{ form.is_public }}
+                        </label>
+                        <div class="label">
+                            <span class="label-text-alt text-gray-500">Visible to all users</span>
+                        </div>
+                    </div>
+
+                    <!-- Featured -->
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text font-semibold">Featured</span>
+                            {{ form.is_featured }}
+                        </label>
+                        <div class="label">
+                            <span class="label-text-alt text-gray-500">Highlight this prompt</span>
+                        </div>
+                    </div>
+
+                    <!-- Template -->
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text font-semibold">Template</span>
+                            {{ form.is_template }}
+                        </label>
+                        <div class="label">
+                            <span class="label-text-alt text-gray-500">Use as a starting point</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        {% if prompt %}
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Update Prompt
+                        {% else %}
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Create Prompt
+                        {% endif %}
+                    </button>
+                    
+                    <a href="{% url 'prompts:prompt_list' %}" class="btn btn-outline flex-1">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

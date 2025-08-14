@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}BOM Templates - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div class="text-center md:text-left">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">BOM Templates</h1>
+            <p class="text-gray-600 text-lg">Manage Bill of Materials templates</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <a href="{% url 'equipment_bom:bom_template_create' %}" class="btn btn-secondary">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create New Template
+            </a>
+        </div>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for template in page_obj %}
+        <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-3">
+                    <h3 class="card-title text-lg">{{ template.template_code }}</h3>
+                    <span class="badge badge-{{ template.is_active|yesno:'success,error' }}">
+                        {{ template.is_active|yesno:'Active,Inactive' }}
+                    </span>
+                </div>
+                
+                <h4 class="font-semibold text-gray-800 mb-2">{{ template.name }}</h4>
+                
+                <div class="text-sm text-gray-600 mb-3">
+                    <p><strong>Equipment Type:</strong> {{ template.equipment_type.name }}</p>
+                    <p><strong>Created by:</strong> {{ template.created_by.username }}</p>
+                    <p><strong>Created:</strong> {{ template.created_at|date:"M d, Y" }}</p>
+                </div>
+                
+                {% if template.description %}
+                <p class="text-gray-600 text-sm mb-4">{{ template.description|truncatechars:100 }}</p>
+                {% endif %}
+                
+                <div class="card-actions justify-end">
+                    <a href="{% url 'equipment_bom:bom_template_detail' template.id %}" class="btn btn-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body text-center py-12">
+                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-600 mb-2">No BOM Templates Found</h3>
+                    <p class="text-gray-500">No BOM templates have been created yet.</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center mt-8">
+        <div class="join">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn">‹</a>
+            {% endif %}
+            
+            <span class="join-item btn btn-disabled">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="join-item btn">›</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

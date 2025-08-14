@@ -1,0 +1,137 @@
+{% extends 'equipment_bom/base_form.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ title }}</h1>
+            <p class="text-gray-600 text-lg">Create or edit material specifications</p>
+        </div>
+
+        <!-- Form -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.non_field_errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Material Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.code.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.code }}
+                            {% if form.code.errors %}
+                            <label class="label">
+                                {% for error in form.code.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">
+                                    {{ form.material_type.label }}
+                                    <span class="text-error">*</span>
+                                </span>
+                            </label>
+                            {{ form.material_type }}
+                            {% if form.material_type.errors %}
+                            <label class="label">
+                                {% for error in form.material_type.errors %}
+                                <span class="label-text-alt text-error">{{ error }}</span>
+                                {% endfor %}
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">
+                                {{ form.name.label }}
+                                <span class="text-error">*</span>
+                            </span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <label class="label">
+                            {% for error in form.name.errors %}
+                            <span class="label-text-alt text-error">{{ error }}</span>
+                            {% endfor %}
+                        </label>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">
+                                {{ form.description.label }}
+                            </span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <label class="label">
+                            {% for error in form.description.errors %}
+                            <span class="label-text-alt text-error">{{ error }}</span>
+                            {% endfor %}
+                        </label>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">
+                                {{ form.properties.label }}
+                            </span>
+                        </label>
+                        {{ form.properties }}
+                        {% if form.properties.errors %}
+                        <label class="label">
+                            {% for error in form.properties.errors %}
+                            <span class="label-text-alt text-error">{{ error }}</span>
+                            {% endfor %}
+                        </label>
+                        {% endif %}
+                        <label class="label">
+                            <span class="label-text-alt text-gray-600">Enter material properties as JSON or plain text</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-center gap-4 pt-6">
+                        <a href="{% url 'equipment_bom:material_list' %}" class="btn btn-outline">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {{ submit_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

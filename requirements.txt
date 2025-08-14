@@ -9,3 +9,5 @@ requests
 whitenoise
 qrcode[pil]
 openai>=1.40.0
+pandas
+openpyxl

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'subscriptions',
     'search',  # Added
     'surveys',  # Added
+    'equipment_bom',  # Added
 ]
 
 # Temporarily disabled browser reload to debug process issues

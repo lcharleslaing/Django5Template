@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Import Log Details - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Import Log Details</h1>
+            <p class="text-gray-600 text-lg">{{ import_log.file_name }}</p>
+        </div>
+
+        <!-- Import Details -->
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Import Information</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="font-medium text-gray-600">File Name:</span>
+                                <span class="ml-2">{{ import_log.file_name }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Equipment Type:</span>
+                                <span class="ml-2">{{ import_log.equipment_type.name }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Status:</span>
+                                <span class="badge badge-{{ import_log.status|yesno:'success,warning,error' }} ml-2">
+                                    {{ import_log.status|title }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Imported By:</span>
+                                <span class="ml-2">{{ import_log.imported_by.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Processing Results</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="font-medium text-gray-600">Records Processed:</span>
+                                <span class="ml-2">{{ import_log.records_processed }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Records Created:</span>
+                                <span class="ml-2">{{ import_log.records_created }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Records Updated:</span>
+                                <span class="ml-2">{{ import_log.records_updated }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Import Date:</span>
+                                <span class="ml-2">{{ import_log.import_date|date:"M d, Y H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if import_log.notes %}
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Notes</h3>
+                    <p class="text-gray-700">{{ import_log.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-center gap-4">
+            <a href="{% url 'equipment_bom:import_logs' %}" class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Import Logs
+            </a>
+            
+            <a href="{% url 'equipment_bom:import_excel' %}" class="btn btn-primary">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+                Import Another File
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
