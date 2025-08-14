@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <h1 class="text-3xl font-bold mb-2">AI Survey Builder</h1>
+  <p class="opacity-70 mb-6">Describe the survey you want. We’ll draft sections, questions, types, and anonymity modes.</p>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div class="form-control">
+      <label class="label"><span class="label-text">{{ form.topic.label }}</span></label>
+      {{ form.topic }}
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="form-control">
+        <label class="label"><span class="label-text">Goals (optional)</span></label>
+        {{ form.goals }}
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Audience</span></label>
+        {{ form.audience }}
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="form-control">
+        <label class="label"><span class="label-text">Tone</span></label>
+        {{ form.tone }}
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Length</span></label>
+        {{ form.length_hint }}
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Publish window (days)</span></label>
+        {{ form.publish_days }}
+      </div>
+    </div>
+    <div class="form-control">
+      <label class="cursor-pointer label">
+        {{ form.auto_publish }} <span class="label-text ml-2">Auto publish after creation</span>
+      </label>
+    </div>
+    <div class="card-actions justify-end">
+      <button class="btn btn-primary">Generate Survey</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

@@ -19,8 +19,10 @@ from datetime import timedelta
 from .models import Survey, Section, Question, Response, Answer, Invite, ReportSnapshot
 from .forms import (
     SurveyForm, SectionForm, QuestionForm, ResponseForm, AnswerForm,
-    InviteForm, BulkInviteForm, SurveyReportForm
+    InviteForm, BulkInviteForm, SurveyReportForm, AISurveyBriefForm
 )
+from .ai_survey_generator import generate_survey_json
+from .services import create_survey_from_json
 
 
 def is_survey_admin(user):
@@ -73,6 +75,31 @@ def action_note(request, pk):
         'survey': survey,
         'page_title': 'Post-Survey Action Note',
     })
+
+
+@login_required
+@user_passes_test(is_survey_creator)
+def ai_builder(request):
+    if request.method == "POST":
+        form = AISurveyBriefForm(request.POST)
+        if form.is_valid():
+            brief = form.cleaned_data
+            data = generate_survey_json(
+                topic=brief["topic"],
+                goals=brief.get("goals", ""),
+                audience=brief.get("audience", ""),
+                tone=brief.get("tone", ""),
+                length_hint=brief.get("length_hint", ""),
+            )
+            survey = create_survey_from_json(data, request.user, publish_days=brief["publish_days"])
+            if brief.get("auto_publish"):
+                survey.status = "PUBLISHED"
+                survey.save()
+            messages.success(request, f"AI generated survey “{survey.title}”.")
+            return redirect('surveys:survey_edit', pk=survey.pk)
+    else:
+        form = AISurveyBriefForm()
+    return render(request, 'surveys/admin/ai_builder.html', {"form": form, "page_title": "AI Survey Builder"})
 
 
 # Public Views

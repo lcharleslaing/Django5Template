@@ -335,34 +335,13 @@ class SurveyReportForm(forms.Form):
         widget=forms.RadioSelect,
         initial='summary'
     )
-    
-    export_format = forms.ChoiceField(
-        choices=EXPORT_FORMATS,
-        widget=forms.Select(attrs={'class': 'select select-bordered w-full'}),
-        initial='html'
-    )
-    
-    include_anonymous = forms.BooleanField(
-        required=False,
-        initial=True,
-        label="Include anonymous responses in aggregates"
-    )
-    
-    min_cohort_size = forms.IntegerField(
-        min_value=1,
-        initial=5,
-        widget=forms.NumberInput(attrs={'class': 'input input-bordered w-full'}),
-        help_text="Minimum cohort size for detailed breakdowns (k-anonymity)"
-    )
-    
-    date_from = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'input input-bordered w-full'}),
-        help_text="Filter responses from this date (optional)"
-    )
-    
-    date_to = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'input input-bordered w-full'}),
-        help_text="Filter responses until this date (optional)"
-    )
+
+
+class AISurveyBriefForm(forms.Form):
+    topic = forms.CharField(label="What is this survey about?", widget=forms.Textarea(attrs={"rows": 2}))
+    goals = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 2}))
+    audience = forms.CharField(initial="Company-wide", required=False)
+    tone = forms.CharField(initial="Direct, respectful", required=False)
+    length_hint = forms.CharField(initial="~15 minutes", required=False)
+    publish_days = forms.IntegerField(initial=14, min_value=1, max_value=60)
+    auto_publish = forms.BooleanField(initial=False, required=False, help_text="Publish immediately after creation")
