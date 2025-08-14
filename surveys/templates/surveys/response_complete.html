@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="text-center">
+        <!-- Success Icon -->
+        <div class="mb-6">
+            <div class="w-24 h-24 bg-success rounded-full flex items-center justify-center mx-auto">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- Success Message -->
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Survey Complete!</h1>
+        <p class="text-lg text-gray-600 mb-6">
+            Thank you for taking the time to complete 
+            <span class="font-semibold">{{ response.survey.title }}</span>.
+        </p>
+        
+        <!-- Response Details -->
+        <div class="card bg-white shadow-lg mb-8">
+            <div class="card-body text-center">
+                <h2 class="card-title text-xl font-semibold text-gray-800 mb-4">Your Response</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div class="stat bg-gray-50 rounded-lg">
+                        <div class="stat-title text-sm">Questions Answered</div>
+                        <div class="stat-value text-primary text-2xl">{{ response.answers.count }}</div>
+                    </div>
+                    
+                    <div class="stat bg-gray-50 rounded-lg">
+                        <div class="stat-title text-sm">Submitted</div>
+                        <div class="stat-value text-info text-2xl">{{ response.submitted_at|date:"M j" }}</div>
+                        <div class="stat-desc text-xs">{{ response.submitted_at|date:"g:i A" }}</div>
+                    </div>
+                </div>
+                
+                {% if response.identity_user %}
+                    <p class="text-sm text-gray-600">
+                        Response ID: <span class="font-mono">{{ response.pk }}</span>
+                    </p>
+                {% else %}
+                    <p class="text-sm text-gray-600">
+                        <span class="badge badge-warning">Anonymous Response</span>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Anonymity Information -->
+        <div class="card bg-blue-50 border border-blue-200 mb-8">
+            <div class="card-body text-center">
+                <h3 class="font-semibold text-blue-800 mb-2">Your Privacy is Protected</h3>
+                <p class="text-blue-700 text-sm">
+                    {% if response.identity_user %}
+                        Your responses are stored securely and will only be used for improving our organization.
+                        {% if response.answers.filter.is_signed=True %}
+                            Some of your answers were signed and may be attributed to you in reports.
+                        {% else %}
+                            Your responses are private and will be aggregated with others for analysis.
+                        {% endif %}
+                    {% else %}
+                        This was an anonymous survey. Your responses cannot be traced back to you.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Next Steps -->
+        <div class="card bg-gray-50 border border-gray-200 mb-8">
+            <div class="card-body text-center">
+                <h3 class="font-semibold text-gray-800 mb-2">What Happens Next?</h3>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p>• Your responses will be analyzed along with others</p>
+                    <p>• Reports will be generated for organizational improvement</p>
+                    <p>• If you opted in for follow-up, you may be contacted</p>
+                    <p>• Results will be shared with the team when available</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="space-y-4">
+            <a href="{% url 'surveys:survey_list' %}" class="btn btn-primary btn-lg">
+                View Other Surveys
+            </a>
+            
+            <div class="flex justify-center gap-4">
+                <a href="{% url 'home' %}" class="btn btn-outline">
+                    ← Back to Home
+                </a>
+                
+                {% if user.is_staff %}
+                    <a href="{% url 'surveys:survey_reports' response.survey.pk %}" class="btn btn-outline btn-secondary">
+                        View Reports
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

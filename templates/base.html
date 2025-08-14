@@ -6,7 +6,14 @@
     <title>{% block title %}Django Starter Template{% endblock %}</title>
     {% load static %}
     <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
-</head>
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+        <script>
+            document.addEventListener('htmx:configRequest', (e) => {
+              e.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+            });
+        </script>
+    </head>
 <body class="flex flex-col min-h-screen bg-base-100">
     <!-- Header/Navbar -->
     <header>
@@ -31,6 +38,19 @@
                                 <kbd class="kbd kbd-xs">K</kbd>
                             </div>
                         </button>
+
+                        <!-- Surveys Quick Link with Badge -->
+                        {% if SURVEYS_ENABLED %}
+                        <a href="{% url 'surveys:list' %}" class="btn btn-ghost btn-sm gap-1 {% if request.path|slice:':9' == '/surveys' %}btn-active{% endif %}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 7h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z" />
+                            </svg>
+                            <span class="hidden md:inline">Surveys</span>
+                            {% if survey_invites_count %}
+                            <span class="badge badge-primary badge-xs">{{ survey_invites_count }}</span>
+                            {% endif %}
+                        </a>
+                        {% endif %}
 
                         <!-- Apps Dropdown -->
                         <div class="dropdown dropdown-end">

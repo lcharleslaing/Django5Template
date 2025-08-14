@@ -20,6 +20,8 @@ urlpatterns = [
     path('subscriptions/', include('subscriptions.urls')),
     # Search functionality
     path('search/', include('search.urls')),
+    # Surveys functionality
+    path('surveys/', include(('surveys.urls', 'surveys'), namespace='surveys')),
     # Registration page
     path('register/', register, name='register'),  # User registration
     # Login page using Django's built-in view

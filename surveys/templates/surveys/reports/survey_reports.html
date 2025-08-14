@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Survey Reports: {{ survey.title }}</h1>
+        <p class="text-gray-600 mt-2">Analyze responses and generate insights</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-primary">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Total Responses</div>
+            <div class="stat-value text-primary">{{ total_responses }}</div>
+        </div>
+        
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-success">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Response Rate</div>
+            <div class="stat-value text-success">{{ response_rate|floatformat:1 }}%</div>
+        </div>
+        
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-info">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Sections</div>
+            <div class="stat-value text-info">{{ survey.sections.count }}</div>
+        </div>
+        
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-warning">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Questions</div>
+            <div class="stat-value text-warning">{{ survey.sections.all|length }}</div>
+        </div>
+    </div>
+
+    <!-- Report Generation Form -->
+    <div class="card bg-white shadow-lg mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-xl font-semibold text-gray-800 mb-4">Generate Report</h2>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Report Type</span>
+                        </label>
+                        <div class="space-y-2">
+                            {% for choice in form.report_type.field.choices %}
+                                <label class="flex items-center">
+                                    <input type="radio" name="{{ form.report_type.name }}" 
+                                           value="{{ choice.0 }}" 
+                                           class="radio radio-primary"
+                                           {% if choice.0 == form.report_type.value %}checked{% endif %}>
+                                    <span class="ml-2">{{ choice.1 }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {% if form.report_type.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.report_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Export Format</span>
+                        </label>
+                        {{ form.export_format }}
+                        {% if form.export_format.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.export_format.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Date Range (Optional)</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label">
+                                    <span class="label-text text-sm">From</span>
+                                </label>
+                                {{ form.date_from }}
+                            </div>
+                            <div>
+                                <label class="label">
+                                    <span class="label-text text-sm">To</span>
+                                </label>
+                                {{ form.date_to }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Options</span>
+                        </label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                {{ form.include_anonymous }}
+                                <span class="ml-2 text-sm">{{ form.include_anonymous.label }}</span>
+                            </label>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="label">
+                                <span class="label-text text-sm">{{ form.min_cohort_size.help_text }}</span>
+                            </label>
+                            {{ form.min_cohort_size }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Generate Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recent Responses -->
+    <div class="card bg-white shadow-lg mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-xl font-semibold text-gray-800 mb-4">Recent Responses</h2>
+            
+            {% if survey.responses.all %}
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr>
+                                <th>Respondent</th>
+                                <th>Submitted</th>
+                                <th>Answers</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for response in survey.responses.all|slice:":10" %}
+                                <tr>
+                                    <td>
+                                        {% if response.identity_user %}
+                                            <div class="flex items-center gap-3">
+                                                <div class="avatar placeholder">
+                                                    <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                                        <span class="text-xs">{{ response.identity_user.username|slice:":2"|upper }}</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium">{{ response.identity_user.username }}</div>
+                                                    <div class="text-sm text-gray-500">{{ response.identity_user.email }}</div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-500 italic">Anonymous</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ response.submitted_at|date:"M j, Y H:i" }}</td>
+                                    <td>{{ response.answers.count }} answers</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline">View Details</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if survey.responses.count > 10 %}
+                    <div class="text-center mt-4">
+                        <a href="#" class="btn btn-outline">View All {{ survey.responses.count }} Responses</a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-8">
+                    <div class="text-4xl mb-4">📝</div>
+                    <p class="text-gray-600">No responses yet for this survey.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex justify-between items-center">
+        <a href="{% url 'surveys:survey_admin_list' %}" class="btn btn-outline">
+            ← Back to Surveys
+        </a>
+        
+        <div class="flex gap-4">
+            <a href="{% url 'surveys:survey_invites' survey.pk %}" class="btn btn-outline btn-info">
+                Manage Invites
+            </a>
+            <a href="{% url 'surveys:survey_edit' survey.pk %}" class="btn btn-outline btn-primary">
+                Edit Survey
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

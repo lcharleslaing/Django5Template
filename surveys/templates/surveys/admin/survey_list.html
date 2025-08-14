@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Survey Administration</h1>
+            <p class="text-gray-600 mt-2">Create and manage company surveys</p>
+        </div>
+        <a href="{% url 'surveys:builder' %}" class="btn btn-primary">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Create Survey
+        </a>
+    </div>
+
+    {% if surveys %}
+        <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created By</th>
+                        <th>Publish Dates</th>
+                        <th>Responses</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for survey in surveys %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <div class="font-semibold">{{ survey.title }}</div>
+                                    {% if survey.description %}
+                                        <div class="text-sm text-gray-500">{{ survey.description|truncatewords:10 }}</div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if survey.status == 'DRAFT' %}
+                                    <span class="badge badge-warning">Draft</span>
+                                {% elif survey.status == 'PUBLISHED' %}
+                                    {% if survey.is_active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-info">Published</span>
+                                    {% endif %}
+                                {% elif survey.status == 'CLOSED' %}
+                                    <span class="badge badge-error">Closed</span>
+                                {% else %}
+                                    <span class="badge badge-neutral">Archived</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ survey.created_by.username }}</td>
+                            <td>
+                                <div class="text-sm">
+                                    <div><strong>Start:</strong> {{ survey.publish_start|date:"M j, Y" }}</div>
+                                    <div><strong>End:</strong> {{ survey.publish_end|date:"M j, Y" }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-primary">{{ survey.response_count }}</div>
+                                    <div class="text-sm text-gray-500">responses</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-col gap-2">
+                                    <a href="{% url 'surveys:survey_edit' survey.pk %}" 
+                                       class="btn btn-sm btn-outline">
+                                        Edit
+                                    </a>
+                                    
+                                    <form method="post" action="{% url 'surveys:publish' survey.pk %}" 
+                                          class="inline">
+                                        {% csrf_token %}
+                                        {% if survey.status == 'DRAFT' %}
+                                            <button type="submit" name="action" value="publish" 
+                                                    class="btn btn-sm btn-success">
+                                                Publish
+                                            </button>
+                                        {% elif survey.status == 'PUBLISHED' %}
+                                            <button type="submit" name="action" value="unpublish" 
+                                                    class="btn btn-sm btn-warning">
+                                                Unpublish
+                                            </button>
+                                            <button type="submit" name="action" value="close" 
+                                                    class="btn btn-sm btn-error">
+                                                Close
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                    
+                                    <a href="{% url 'surveys:survey_invites' survey.pk %}" 
+                                       class="btn btn-sm btn-outline btn-info">
+                                        Invites
+                                    </a>
+                                    
+                                    <a href="{% url 'surveys:survey_reports' survey.pk %}" 
+                                       class="btn btn-sm btn-outline btn-secondary">
+                                        Reports
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">📊</div>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">No Surveys Created Yet</h2>
+            <p class="text-gray-600 mb-6">Get started by creating your first survey to collect feedback from your team.</p>
+            <a href="{% url 'surveys:survey_create' %}" class="btn btn-primary btn-lg">
+                Create Your First Survey
+            </a>
+        </div>
+    {% endif %}
+    
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-primary">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Total Surveys</div>
+            <div class="stat-value text-primary">{{ surveys.count }}</div>
+        </div>
+        
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-success">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Active Surveys</div>
+            <div class="stat-value text-success">{{ surveys|length|add:"0" }}</div>
+        </div>
+        
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-info">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Total Responses</div>
+            <div class="stat-value text-info">{{ surveys|length|add:"0" }}</div>
+        </div>
+        
+        <div class="stat bg-white shadow-lg rounded-lg">
+            <div class="stat-figure text-warning">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Draft Surveys</div>
+            <div class="stat-value text-warning">{{ surveys|length|add:"0" }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

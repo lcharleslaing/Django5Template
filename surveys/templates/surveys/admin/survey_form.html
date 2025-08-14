@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .drag-handle {
+        cursor: move;
+        color: #6b7280;
+    }
+    .drag-handle:hover {
+        color: #374151;
+    }
+    .section-card, .question-card {
+        transition: all 0.2s ease;
+    }
+    .section-card:hover, .question-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">{{ page_title }}</h1>
+        <p class="text-gray-600 mt-2">Configure your survey settings and structure</p>
+    </div>
+
+    <form method="post" id="survey-form">
+        {% csrf_token %}
+        
+        <!-- Survey Basic Info -->
+        <div class="card bg-white shadow-lg mb-8">
+            <div class="card-body">
+                <h2 class="card-title text-xl font-semibold text-gray-800 mb-4">Survey Information</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Survey Title *</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">K-Anonymity Threshold *</span>
+                        </label>
+                        {{ form.k_threshold }}
+                        <label class="label">
+                            <span class="label-text-alt">Minimum cohort size for detailed reports</span>
+                        </label>
+                        {% if form.k_threshold.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.k_threshold.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text font-medium">Description</span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="text-error text-sm mt-1">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Publish Start Date *</span>
+                        </label>
+                        {{ form.publish_start }}
+                        {% if form.publish_start.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.publish_start.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Publish End Date *</span>
+                        </label>
+                        {{ form.publish_end }}
+                        {% if form.publish_end.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.publish_end.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sections Management -->
+        <div class="card bg-white shadow-lg mb-8">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="card-title text-xl font-semibold text-gray-800">Survey Sections</h2>
+                    <button type="button" class="btn btn-primary" onclick="addSection()">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Section
+                    </button>
+                </div>
+                
+                <div id="sections-container" class="space-y-4">
+                    {% if survey %}
+                        {% for section in survey.sections.all %}
+                            <div class="section-card card bg-gray-50 border-2 border-dashed border-gray-300" data-section-id="{{ section.pk }}">
+                                <div class="card-body">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <span class="drag-handle text-2xl">⋮⋮</span>
+                                            <h3 class="text-lg font-medium">Section {{ forloop.counter }}</h3>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-error" onclick="removeSection(this)">
+                                            Remove
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="form-control">
+                                            <label class="label">
+                                                <span class="label-text">Section Title</span>
+                                            </label>
+                                            <input type="text" name="section_{{ section.pk }}_title" 
+                                                   value="{{ section.title }}" 
+                                                   class="input input-bordered w-full" required>
+                                        </div>
+                                        
+                                        <div class="form-control">
+                                            <label class="label">
+                                                <span class="label-text">Order</span>
+                                            </label>
+                                            <input type="number" name="section_{{ section.pk }}_order" 
+                                                   value="{{ section.order }}" 
+                                                   class="input input-bordered w-full" min="0" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-control mt-4">
+                                        <label class="label">
+                                            <span class="label-text">Description</span>
+                                        </label>
+                                        <textarea name="section_{{ section.pk }}_description" 
+                                                  class="textarea textarea-bordered w-full" 
+                                                  rows="2">{{ section.description }}</textarea>
+                                    </div>
+                                    
+                                    <!-- Questions in this section -->
+                                    <div class="mt-6">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <h4 class="font-medium text-gray-700">Questions</h4>
+                                            <button type="button" class="btn btn-sm btn-outline" onclick="addQuestion(this)">
+                                                Add Question
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="questions-container space-y-3">
+                                            {% for question in section.questions.all %}
+                                                <div class="question-card card bg-white border border-gray-200" data-question-id="{{ question.pk }}">
+                                                    <div class="card-body p-4">
+                                                        <div class="flex items-center justify-between mb-3">
+                                                            <div class="flex items-center gap-3">
+                                                                <span class="drag-handle text-xl">⋮⋮</span>
+                                                                <span class="text-sm font-medium">Question {{ forloop.counter }}</span>
+                                                            </div>
+                                                            <button type="button" class="btn btn-xs btn-error" onclick="removeQuestion(this)">
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="form-control">
+                                                                <label class="label">
+                                                                    <span class="label-text">Question Type</span>
+                                                                </label>
+                                                                <select name="question_{{ question.pk }}_type" class="select select-bordered w-full" required>
+                                                                    <option value="LIKERT" {% if question.type == 'LIKERT' %}selected{% endif %}>Likert Scale</option>
+                                                                    <option value="MULTI" {% if question.type == 'MULTI' %}selected{% endif %}>Multiple Choice</option>
+                                                                    <option value="SINGLE" {% if question.type == 'SINGLE' %}selected{% endif %}>Single Choice</option>
+                                                                    <option value="SHORT_TEXT" {% if question.type == 'SHORT_TEXT' %}selected{% endif %}>Short Text</option>
+                                                                    <option value="LONG_TEXT" {% if question.type == 'LONG_TEXT' %}selected{% endif %}>Long Text</option>
+                                                                    <option value="NPS" {% if question.type == 'NPS' %}selected{% endif %}>Net Promoter Score</option>
+                                                                    <option value="NUMBER" {% if question.type == 'NUMBER' %}selected{% endif %}>Number</option>
+                                                                    <option value="DATE" {% if question.type == 'DATE' %}selected{% endif %}>Date</option>
+                                                                    <option value="RANK" {% if question.type == 'RANK' %}selected{% endif %}>Ranking</option>
+                                                                </select>
+                                                            </div>
+                                                            
+                                                            <div class="form-control">
+                                                                <label class="label">
+                                                                    <span class="label-text">Anonymity Mode</span>
+                                                                </label>
+                                                                <select name="question_{{ question.pk }}_anonymity" class="select select-bordered w-full" required>
+                                                                    <option value="ANONYMOUS" {% if question.anonymity_mode == 'ANONYMOUS' %}selected{% endif %}>Anonymous</option>
+                                                                    <option value="ESCROW" {% if question.anonymity_mode == 'ESCROW' %}selected{% endif %}>Private (Escrow)</option>
+                                                                    <option value="SIGNED" {% if question.anonymity_mode == 'SIGNED' %}selected{% endif %}>Signed</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="form-control mt-4">
+                                                            <label class="label">
+                                                                <span class="label-text">Question Prompt *</span>
+                                                            </label>
+                                                            <textarea name="question_{{ question.pk }}_prompt" 
+                                                                      class="textarea textarea-bordered w-full" 
+                                                                      rows="2" required>{{ question.prompt }}</textarea>
+                                                        </div>
+                                                        
+                                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                                            <div class="form-control">
+                                                                <label class="label">
+                                                                    <span class="label-text">Order</span>
+                                                                </label>
+                                                                <input type="number" name="question_{{ question.pk }}_order" 
+                                                                       value="{{ question.order }}" 
+                                                                       class="input input-bordered w-full" min="0" required>
+                                                            </div>
+                                                            
+                                                            <div class="form-control">
+                                                                <label class="label">
+                                                                    <span class="label-text">Required</span>
+                                                                </label>
+                                                                <label class="label cursor-pointer">
+                                                                    <input type="checkbox" name="question_{{ question.pk }}_required" 
+                                                                           class="checkbox checkbox-primary" 
+                                                                           {% if question.required %}checked{% endif %}>
+                                                                    <span class="label-text ml-2">Required</span>
+                                                                </label>
+                                                            </div>
+                                                            
+                                                            <div class="form-control">
+                                                                <label class="label">
+                                                                    <span class="label-text">Help Text</span>
+                                                                </label>
+                                                                <input type="text" name="question_{{ question.pk }}_help" 
+                                                                       value="{{ question.help_text }}" 
+                                                                       class="input input-bordered w-full">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-between items-center">
+            <a href="{% url 'surveys:survey_admin_list' %}" class="btn btn-outline">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% if survey %}Update Survey{% else %}Create Survey{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+let sectionCounter = 0;
+let questionCounter = 0;
+
+function addSection() {
+    sectionCounter++;
+    const container = document.getElementById('sections-container');
+    const sectionHtml = `
+        <div class="section-card card bg-gray-50 border-2 border-dashed border-gray-300" data-section-id="new_${sectionCounter}">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="drag-handle text-2xl">⋮⋮</span>
+                        <h3 class="text-lg font-medium">New Section</h3>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-error" onclick="removeSection(this)">
+                        Remove
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Section Title</span>
+                        </label>
+                        <input type="text" name="new_section_${sectionCounter}_title" 
+                               class="input input-bordered w-full" required>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Order</span>
+                        </label>
+                        <input type="number" name="new_section_${sectionCounter}_order" 
+                               value="${sectionCounter}" 
+                               class="input input-bordered w-full" min="0" required>
+                    </div>
+                </div>
+                
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Description</span>
+                    </label>
+                    <textarea name="new_section_${sectionCounter}_description" 
+                              class="textarea textarea-bordered w-full" 
+                              rows="2"></textarea>
+                </div>
+                
+                <div class="mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-medium text-gray-700">Questions</h4>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="addQuestion(this)">
+                            Add Question
+                        </button>
+                    </div>
+                    
+                    <div class="questions-container space-y-3">
+                        <!-- Questions will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', sectionHtml);
+}
+
+function removeSection(button) {
+    if (confirm('Are you sure you want to remove this section? All questions will be deleted.')) {
+        button.closest('.section-card').remove();
+    }
+}
+
+function addQuestion(button) {
+    questionCounter++;
+    const questionsContainer = button.closest('.card-body').querySelector('.questions-container');
+    const questionHtml = `
+        <div class="question-card card bg-white border border-gray-200" data-question-id="new_${questionCounter}">
+            <div class="card-body p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="drag-handle text-xl">⋮⋮</span>
+                        <span class="text-sm font-medium">New Question</span>
+                    </div>
+                    <button type="button" class="btn btn-xs btn-error" onclick="removeQuestion(this)">
+                        Remove
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Question Type</span>
+                        </label>
+                        <select name="new_question_${questionCounter}_type" class="select select-bordered w-full" required>
+                            <option value="LIKERT">Likert Scale</option>
+                            <option value="MULTI">Multiple Choice</option>
+                            <option value="SINGLE">Single Choice</option>
+                            <option value="SHORT_TEXT">Short Text</option>
+                            <option value="LONG_TEXT">Long Text</option>
+                            <option value="NPS">Net Promoter Score</option>
+                            <option value="NUMBER">Number</option>
+                            <option value="DATE">Date</option>
+                            <option value="RANK">Ranking</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Anonymity Mode</span>
+                        </label>
+                        <select name="new_question_${questionCounter}_anonymity" class="select select-bordered w-full" required>
+                            <option value="ANONYMOUS">Anonymous</option>
+                            <option value="ESCROW" selected>Private (Escrow)</option>
+                            <option value="SIGNED">Signed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Question Prompt *</span>
+                    </label>
+                    <textarea name="new_question_${questionCounter}_prompt" 
+                              class="textarea textarea-bordered w-full" 
+                              rows="2" required placeholder="Enter your question here..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Order</span>
+                        </label>
+                        <input type="number" name="new_question_${questionCounter}_order" 
+                               value="${questionCounter}" 
+                               class="input input-bordered w-full" min="0" required>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Required</span>
+                        </label>
+                        <label class="label cursor-pointer">
+                            <input type="checkbox" name="new_question_${questionCounter}_required" 
+                                   class="checkbox checkbox-primary" checked>
+                            <span class="label-text ml-2">Required</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Help Text</span>
+                        </label>
+                        <input type="text" name="new_question_${questionCounter}_help" 
+                               class="input input-bordered w-full" placeholder="Optional help text">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    questionsContainer.insertAdjacentHTML('beforeend', questionHtml);
+}
+
+function removeQuestion(button) {
+    if (confirm('Are you sure you want to remove this question?')) {
+        button.closest('.question-card').remove();
+    }
+}
+
+// Initialize drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add drag and drop for sections and questions
+    // This would integrate with HTMX for server-side reordering
+});
+</script>
+{% endblock %}

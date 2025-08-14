@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">My Survey Invites</h1>
+        <a href="{% url 'surveys:list' %}" class="btn btn-ghost">Browse Surveys</a>
+    </div>
+
+    {% include 'surveys/partials/privacy_explainer.html' %}
+
+    {% if invites %}
+    <div class="space-y-4">
+        {% for invite in invites %}
+        <div class="card bg-white shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="card-title">{{ invite.survey.title }}</h2>
+                        <p class="text-sm opacity-70">Expires {{ invite.expires_at|naturaltime }}</p>
+                    </div>
+                    <div class="card-actions">
+                        <a href="{% url 'surveys:take_with_token' invite.survey_id invite.token %}" class="btn btn-primary">Start</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 opacity-70">No pending invites.</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

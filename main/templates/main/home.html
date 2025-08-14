@@ -64,6 +64,32 @@
                     </div>
                 </div>
 
+                {% if SURVEYS_ENABLED and user.is_authenticated %}
+                <!-- Card: Surveys -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body items-center text-center">
+                        <svg class="w-8 h-8 text-secondary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 7h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z"/>
+                        </svg>
+                        <h2 class="card-title">Surveys</h2>
+                        <p class="text-sm opacity-70">
+                            {% if survey_invites_count %}
+                                You have {{ survey_invites_count }} pending survey{{ survey_invites_count|pluralize }}.
+                            {% else %}
+                                No pending invites.
+                            {% endif %}
+                        </p>
+                        <div class="card-actions">
+                            <a href="{% url 'surveys:my_invites' %}" class="btn btn-primary btn-sm">My Invites</a>
+                            <a href="{% url 'surveys:list' %}" class="btn btn-outline btn-sm">Browse</a>
+                            {% if perms.surveys.add_survey or user.is_superuser %}
+                                <a href="{% url 'surveys:builder' %}" class="btn btn-secondary btn-sm">Create Survey</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Card 2: Settings -->
                 <div class="card bg-base-100 shadow-xl">
                     <div class="card-body items-center text-center">

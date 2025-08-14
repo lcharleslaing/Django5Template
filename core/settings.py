@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'tailwind',
     'theme',
     'main',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'suno_prompt_builder',
     'subscriptions',
     'search',  # Added
+    'surveys',  # Added
 ]
 
 # Temporarily disabled browser reload to debug process issues
@@ -91,6 +93,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'surveys.context.surveys_context',
             ],
         },
     },
@@ -174,3 +177,6 @@ LOGIN_URL = '/login/'
 # Email backend for development: prints emails to the console.
 # Use an SMTP backend in production for real email delivery.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Feature flags
+SURVEYS_ENABLED = True

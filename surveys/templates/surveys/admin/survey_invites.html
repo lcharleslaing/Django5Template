@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Manage Invites: {{ survey.title }}</h1>
+        <p class="text-gray-600 mt-2">Send invitations and track survey participation</p>
+    </div>
+
+    <!-- Survey Status -->
+    <div class="card bg-white shadow-lg mb-8">
+        <div class="card-body">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Survey Status</h2>
+                    <div class="flex items-center gap-4 text-sm">
+                        <span class="badge {% if survey.status == 'PUBLISHED' %}badge-success{% elif survey.status == 'DRAFT' %}badge-warning{% else %}badge-error{% endif %}">
+                            {{ survey.status }}
+                        </span>
+                        <span class="text-gray-600">
+                            Published: {{ survey.publish_start|date:"M j, Y" }} - {{ survey.publish_end|date:"M j, Y" }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-primary">{{ survey.response_count }}</div>
+                    <div class="text-sm text-gray-500">Total Responses</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Invite Form -->
+    <div class="card bg-white shadow-lg mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-xl font-semibold text-gray-800 mb-4">Send Bulk Invitations</h2>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Invite Type</span>
+                        </label>
+                        <div class="space-y-3">
+                            {% for choice in form.invite_type.field.choices %}
+                                <label class="flex items-center">
+                                    <input type="radio" name="{{ form.invite_type.name }}" 
+                                           value="{{ choice.0 }}" 
+                                           class="radio radio-primary"
+                                           {% if choice.0 == form.invite_type.value %}checked{% endif %}>
+                                    <span class="ml-2">{{ choice.1 }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {% if form.invite_type.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.invite_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Invite Expiration</span>
+                        </label>
+                        {{ form.expires_in_days }}
+                        <label class="label">
+                            <span class="label-text-alt">{{ form.expires_in_days.help_text }}</span>
+                        </label>
+                        {% if form.expires_in_days.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.expires_in_days.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Manual Email List -->
+                <div id="manual-email-section" class="hidden">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Email Addresses</span>
+                        </label>
+                        {{ form.email_list }}
+                        <label class="label">
+                            <span class="label-text-alt">{{ form.email_list.help_text }}</span>
+                        </label>
+                        {% if form.email_list.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.email_list.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Group Selection -->
+                <div id="group-selection-section" class="hidden">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Select Users</span>
+                        </label>
+                        {{ form.groups }}
+                        {% if form.groups.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.groups.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        Send Invitations
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Existing Invites -->
+    <div class="card bg-white shadow-lg mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-xl font-semibold text-gray-800 mb-4">Existing Invitations</h2>
+            
+            {% if invites %}
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Token</th>
+                                <th>Status</th>
+                                <th>Expires</th>
+                                <th>Used</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invite in invites %}
+                                <tr>
+                                    <td>
+                                        {% if invite.email %}
+                                            {{ invite.email }}
+                                        {% else %}
+                                            <span class="text-gray-500 italic">Anonymous</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                            {{ invite.token|slice:":8" }}...
+                                        </code>
+                                    </td>
+                                    <td>
+                                        {% if invite.is_expired %}
+                                            <span class="badge badge-error">Expired</span>
+                                        {% elif invite.is_used %}
+                                            <span class="badge badge-warning">Used</span>
+                                        {% else %}
+                                            <span class="badge badge-success">Valid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">
+                                            <div>{{ invite.expires_at|date:"M j, Y" }}</div>
+                                            <div class="text-gray-500">{{ invite.expires_at|date:"g:i A" }}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if invite.used_at %}
+                                            <div class="text-sm">
+                                                <div>{{ invite.used_at|date:"M j, Y" }}</div>
+                                                <div class="text-gray-500">{{ invite.used_at|date:"g:i A" }}</div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-500">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-2">
+                                            {% if not invite.is_used and not invite.is_expired %}
+                                                <button class="btn btn-xs btn-outline" 
+                                                        onclick="copyInviteLink('{{ invite.token }}')">
+                                                    Copy Link
+                                                </button>
+                                                <button class="btn btn-xs btn-error" 
+                                                        onclick="deleteInvite({{ invite.pk }})">
+                                                    Delete
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Invite Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+                    <div class="stat bg-gray-50 rounded-lg">
+                        <div class="stat-title text-sm">Total Invites</div>
+                        <div class="stat-value text-primary text-2xl">{{ invites.count }}</div>
+                    </div>
+                    
+                    <div class="stat bg-green-50 rounded-lg">
+                        <div class="stat-title text-sm">Valid</div>
+                        <div class="stat-value text-success text-2xl">{{ invites|length|add:"0" }}</div>
+                    </div>
+                    
+                    <div class="stat bg-yellow-50 rounded-lg">
+                        <div class="stat-title text-sm">Used</div>
+                        <div class="stat-value text-warning text-2xl">{{ invites|length|add:"0" }}</div>
+                    </div>
+                    
+                    <div class="stat bg-red-50 rounded-lg">
+                        <div class="stat-title text-sm">Expired</div>
+                        <div class="stat-value text-error text-2xl">{{ invites|length|add:"0" }}</div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <div class="text-4xl mb-4">📧</div>
+                    <p class="text-gray-600">No invitations have been sent yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex justify-between items-center">
+        <a href="{% url 'surveys:survey_admin_list' %}" class="btn btn-outline">
+            ← Back to Surveys
+        </a>
+        
+        <div class="flex gap-4">
+            <a href="{% url 'surveys:survey_edit' survey.pk %}" class="btn btn-outline btn-primary">
+                Edit Survey
+            </a>
+            <a href="{% url 'surveys:survey_reports' survey.pk %}" class="btn btn-outline btn-secondary">
+                View Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide sections based on invite type selection
+document.addEventListener('DOMContentLoaded', function() {
+    const inviteTypeRadios = document.querySelectorAll('input[name="invite_type"]');
+    const manualEmailSection = document.getElementById('manual-email-section');
+    const groupSelectionSection = document.getElementById('group-selection-section');
+    
+    function updateSections() {
+        const selectedType = document.querySelector('input[name="invite_type"]:checked').value;
+        
+        manualEmailSection.classList.add('hidden');
+        groupSelectionSection.classList.add('hidden');
+        
+        if (selectedType === 'manual_list') {
+            manualEmailSection.classList.remove('hidden');
+        } else if (selectedType === 'by_group') {
+            groupSelectionSection.classList.remove('hidden');
+        }
+    }
+    
+    inviteTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateSections);
+    });
+    
+    // Initialize on page load
+    updateSections();
+});
+
+function copyInviteLink(token) {
+    const baseUrl = window.location.origin;
+    const inviteUrl = `${baseUrl}/surveys/${surveyId}/response/${token}/`;
+    
+    navigator.clipboard.writeText(inviteUrl).then(function() {
+        // Show success message
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline');
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        alert('Failed to copy invite link. Please copy manually.');
+    });
+}
+
+function deleteInvite(inviteId) {
+    if (confirm('Are you sure you want to delete this invitation?')) {
+        // This would typically be a POST request to delete the invite
+        // For now, we'll just show a message
+        alert('Invite deletion would be implemented here.');
+    }
+}
+
+// Get survey ID from URL for the copy function
+const surveyId = window.location.pathname.split('/')[2];
+</script>
+{% endblock %}

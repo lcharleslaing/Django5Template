@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .anonymity-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+    }
+    .anonymity-anonymous { background-color: #fef3c7; color: #92400e; }
+    .anonymity-escrow { background-color: #dbeafe; color: #1e40af; }
+    .anonymity-signed { background-color: #dcfce7; color: #166534; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6 max-w-4xl">
+    <!-- Survey Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ survey.title }}</h1>
+        {% if survey.description %}
+            <p class="text-gray-600 mb-4">{{ survey.description }}</p>
+        {% endif %}
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+            <div class="bg-primary h-2 rounded-full transition-all duration-300" 
+                 style="width: 0%" id="progress-bar"></div>
+        </div>
+        <p class="text-sm text-gray-500">
+            <span id="current-question">1</span> of <span id="total-questions">{{ survey.sections.count }}</span> questions
+        </p>
+    </div>
+
+    <!-- Survey Form -->
+    <form method="post" id="survey-form" class="space-y-8">
+        {% csrf_token %}
+        
+        {% for section in survey.sections.all %}
+            <div class="section" data-section="{{ forloop.counter }}">
+                <div class="card bg-white shadow-lg">
+                    <div class="card-body">
+                        <h2 class="card-title text-xl font-semibold text-gray-800 mb-4">
+                            {{ section.title }}
+                        </h2>
+                        
+                        {% if section.description %}
+                            <p class="text-gray-600 mb-6">{{ section.description }}</p>
+                        {% endif %}
+                        
+                        {% for question in section.questions.all %}
+                            <div class="question-container mb-8" data-question="{{ forloop.counter }}">
+                                <div class="border-l-4 border-primary pl-4">
+                                    <!-- Question Header -->
+                                    <div class="flex items-start justify-between mb-3">
+                                        <h3 class="text-lg font-medium text-gray-800">
+                                            {{ question.prompt }}
+                                        </h3>
+                                        <span class="anonymity-badge anonymity-{{ question.anonymity_mode|lower }}">
+                                            {% if question.anonymity_mode == 'ANONYMOUS' %}
+                                                Anonymous
+                                            {% elif question.anonymity_mode == 'ESCROW' %}
+                                                Private
+                                            {% else %}
+                                                Signed
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    
+                                    {% if question.help_text %}
+                                        <p class="text-sm text-gray-600 mb-4">{{ question.help_text }}</p>
+                                    {% endif %}
+                                    
+                                    <!-- Question Input -->
+                                    <div class="question-input">
+                                        {% if question.type == 'LIKERT' %}
+                                            <div class="flex flex-wrap gap-3">
+                                                {% for i in question.scale_values %}
+                                                    <label class="flex flex-col items-center">
+                                                        <input type="radio" 
+                                                               name="question_{{ question.pk }}" 
+                                                               value="{{ i }}"
+                                                               class="radio radio-primary"
+                                                               {% if question.required %}required{% endif %}>
+                                                        <span class="text-sm mt-1">{{ i }}</span>
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        
+                                        {% elif question.type == 'NPS' %}
+                                            <div class="grid grid-cols-11 gap-1">
+                                                {% for i in question.scale_values %}
+                                                    <label class="flex flex-col items-center">
+                                                        <input type="radio" 
+                                                               name="question_{{ question.pk }}" 
+                                                               value="{{ i }}"
+                                                               class="radio radio-primary"
+                                                               {% if question.required %}required{% endif %}>
+                                                        <span class="text-xs mt-1">{{ i }}</span>
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="flex justify-between text-xs text-gray-500 mt-2">
+                                                <span>Not likely</span>
+                                                <span>Very likely</span>
+                                            </div>
+                                        
+                                        {% elif question.type == 'MULTI' %}
+                                            <div class="space-y-2">
+                                                {% for option in question.options %}
+                                                    <label class="flex items-center">
+                                                        <input type="checkbox" 
+                                                               name="question_{{ question.pk }}" 
+                                                               value="{{ option }}"
+                                                               class="checkbox checkbox-primary"
+                                                               {% if question.required %}required{% endif %}>
+                                                        <span class="ml-2">{{ option }}</span>
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        
+                                        {% elif question.type == 'SINGLE' %}
+                                            <div class="space-y-2">
+                                                {% for option in question.options %}
+                                                    <label class="flex items-center">
+                                                        <input type="radio" 
+                                                               name="question_{{ question.pk }}" 
+                                                               value="{{ option }}"
+                                                               class="radio radio-primary"
+                                                               {% if question.required %}required{% endif %}>
+                                                        <span class="ml-2">{{ option }}</span>
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        
+                                        {% elif question.type == 'SHORT_TEXT' %}
+                                            <input type="text" 
+                                                   name="question_{{ question.pk }}"
+                                                   class="input input-bordered w-full"
+                                                   maxlength="500"
+                                                   {% if question.required %}required{% endif %}
+                                                   placeholder="Enter your answer...">
+                                        
+                                        {% elif question.type == 'LONG_TEXT' %}
+                                            <textarea name="question_{{ question.pk }}"
+                                                      class="textarea textarea-bordered w-full"
+                                                      rows="4"
+                                                      {% if question.required %}required{% endif %}
+                                                      placeholder="Enter your answer..."></textarea>
+                                        
+                                        {% elif question.type == 'NUMBER' %}
+                                            <input type="number" 
+                                                   name="question_{{ question.pk }}"
+                                                   class="input input-bordered w-full"
+                                                   min="{{ question.scale_min }}"
+                                                   max="{{ question.scale_max }}"
+                                                   {% if question.required %}required{% endif %}
+                                                   placeholder="Enter a number between {{ question.scale_min }} and {{ question.scale_max }}">
+                                        
+                                        {% elif question.type == 'DATE' %}
+                                            <input type="date" 
+                                                   name="question_{{ question.pk }}"
+                                                   class="input input-bordered w-full"
+                                                   {% if question.required %}required{% endif %}>
+                                        
+                                        {% elif question.type == 'RANK' %}
+                                            <select name="question_{{ question.pk }}"
+                                                    class="select select-bordered w-full"
+                                                    {% if question.required %}required{% endif %}>
+                                                <option value="">Select an option</option>
+                                                {% for option in question.options %}
+                                                    <option value="{{ option }}">{{ option }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        {% endif %}
+                                        
+                                        <!-- Anonymity-specific fields for text questions -->
+                                        {% if question.type == 'SHORT_TEXT' or question.type == 'LONG_TEXT' %}
+                                            {% if question.anonymity_mode == 'ESCROW' %}
+                                                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                                                    <label class="flex items-center mb-3">
+                                                        <input type="checkbox" 
+                                                               name="question_{{ question.pk }}_followup"
+                                                               class="checkbox checkbox-primary"
+                                                               checked>
+                                                        <span class="ml-2 text-sm">I'm open to follow-up questions about this answer</span>
+                                                    </label>
+                                                    <input type="text" 
+                                                           name="question_{{ question.pk }}_contact"
+                                                           class="input input-bordered w-full text-sm"
+                                                           placeholder="Preferred contact method (optional)">
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if question.anonymity_mode in 'ESCROW,SIGNED' %}
+                                                <div class="mt-4 p-4 bg-green-50 rounded-lg">
+                                                    <label class="flex items-center">
+                                                        <input type="checkbox" 
+                                                               name="question_{{ question.pk }}_signed"
+                                                               class="checkbox checkbox-primary"
+                                                               {% if question.anonymity_mode == 'SIGNED' %}checked{% endif %}>
+                                                        <span class="ml-2 text-sm">Sign this answer with my name</span>
+                                                    </label>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <!-- Final Comment Section -->
+        <div class="card bg-white shadow-lg">
+            <div class="card-body">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">Additional Comments (Optional)</h3>
+                                <textarea name="final_comment"
+                                          class="textarea textarea-bordered w-full"
+                                          rows="3"
+                                          placeholder="Any additional thoughts or feedback..."></textarea>
+                                
+                                <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                                    <label class="flex items-center mb-3">
+                                        <input type="checkbox" 
+                                               name="final_comment_signed"
+                                               class="checkbox checkbox-primary">
+                                        <span class="ml-2 text-sm">Sign this comment with my name</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+        
+        <!-- Submit Button -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg">
+                Submit Survey
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Progress tracking
+document.addEventListener('DOMContentLoaded', function() {
+    const totalQuestions = {{ survey.sections.count }};
+    const progressBar = document.getElementById('progress-bar');
+    const currentQuestionSpan = document.getElementById('current-question');
+    
+    // Update progress as user scrolls
+    function updateProgress() {
+        const scrollTop = window.pageYOffset;
+        const docHeight = document.body.offsetHeight - window.innerHeight;
+        const scrollPercent = scrollTop / docHeight;
+        const progress = Math.min(scrollPercent * totalQuestions, totalQuestions);
+        
+        progressBar.style.width = (progress / totalQuestions * 100) + '%';
+        currentQuestionSpan.textContent = Math.max(1, Math.ceil(progress));
+    }
+    
+    window.addEventListener('scroll', updateProgress);
+    updateProgress();
+    
+    // Form validation
+    const form = document.getElementById('survey-form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                isValid = false;
+                field.classList.add('input-error');
+            } else {
+                field.classList.remove('input-error');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please complete all required questions before submitting.');
+        }
+    });
+});
+</script>
+{% endblock %}
