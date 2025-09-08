@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if task %}Edit Task{% else %}Add Task{% endif %} - {{ step.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            {% if task %}Edit Task{% else %}Add New Task{% endif %}
+        </h1>
+        <p class="text-gray-600">{% if task %}Update task details{% else %}Add a new task to this step{% endif %}</p>
+        <div class="text-sm text-gray-500 mt-2">
+            Step: <span class="font-semibold">{{ step.title }}</span> in <span class="font-semibold">{{ step.flow.name }}</span>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Task Title Field -->
+                <div class="form-control">
+                    <label for="{{ form.title.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Task Title</span>
+                        <span class="label-text-alt text-error">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="{{ form.title.name }}" 
+                        id="{{ form.title.id_for_label }}"
+                        value="{% if task %}{{ form.title.value|default:task.title }}{% else %}{{ form.title.value|default:'' }}{% endif %}"
+                        placeholder="Enter task title"
+                        class="input input-bordered w-full {% if form.title.errors %}input-error{% endif %}"
+                        required
+                    >
+                    {% if form.title.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.title.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-control">
+                    <label for="{{ form.description.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Description</span>
+                    </label>
+                    <textarea 
+                        name="{{ form.description.name }}" 
+                        id="{{ form.description.id_for_label }}"
+                        placeholder="Describe what this task involves"
+                        class="textarea textarea-bordered w-full h-24 {% if form.description.errors %}textarea-error{% endif %}"
+                        rows="3"
+                    >{% if task %}{{ form.description.value|default:task.description }}{% else %}{{ form.description.value|default:'' }}{% endif %}</textarea>
+                    {% if form.description.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Due Date Field -->
+                <div class="form-control">
+                    <label for="{{ form.due_date.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Due Date</span>
+                    </label>
+                    <input 
+                        type="date" 
+                        name="{{ form.due_date.name }}" 
+                        id="{{ form.due_date.id_for_label }}"
+                        value="{% if task %}{{ form.due_date.value|default:task.due_date|date:'Y-m-d' }}{% else %}{{ form.due_date.value|default:'' }}{% endif %}"
+                        class="input input-bordered w-full {% if form.due_date.errors %}input-error{% endif %}"
+                    >
+                    {% if form.due_date.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.due_date.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Completed Status Field -->
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text font-semibold">Task Completed</span>
+                        <input 
+                            type="checkbox" 
+                            name="{{ form.is_completed.name }}" 
+                            class="toggle toggle-primary" 
+                            {% if task %}{% if form.is_completed.value or task.is_completed %}checked{% endif %}{% else %}{% if form.is_completed.value %}checked{% endif %}{% endif %}
+                        >
+                    </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-control pt-4">
+                    <div class="flex gap-4 justify-end">
+                        <a href="{% url 'flow_builder:flow_detail' step.flow.pk %}" class="btn btn-outline">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {% if task %}Update Task{% else %}Add Task{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

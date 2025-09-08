@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Flow - {{ flow.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Edit Flow</h1>
+        <p class="text-gray-600">Update workflow process details</p>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Flow Name Field -->
+                <div class="form-control">
+                    <label for="{{ form.name.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Flow Name</span>
+                        <span class="label-text-alt text-error">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="{{ form.name.name }}" 
+                        id="{{ form.name.id_for_label }}"
+                        value="{{ form.name.value|default:flow.name }}"
+                        placeholder="Enter flow name"
+                        class="input input-bordered w-full {% if form.name.errors %}input-error{% endif %}"
+                        required
+                    >
+                    {% if form.name.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.name.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-control">
+                    <label for="{{ form.description.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Description</span>
+                    </label>
+                    <textarea 
+                        name="{{ form.description.name }}" 
+                        id="{{ form.description.id_for_label }}"
+                        placeholder="Describe the workflow process"
+                        class="textarea textarea-bordered w-full h-24 {% if form.description.errors %}textarea-error{% endif %}"
+                        rows="3"
+                    >{{ form.description.value|default:flow.description }}</textarea>
+                    {% if form.description.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Start Date Field -->
+                <div class="form-control">
+                    <label for="{{ form.start_date.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Start Date</span>
+                        <span class="label-text-alt text-error">*</span>
+                    </label>
+                    <input 
+                        type="date" 
+                        name="{{ form.start_date.name }}" 
+                        id="{{ form.start_date.id_for_label }}"
+                        value="{{ form.start_date.value|default:flow.start_date|date:'Y-m-d' }}"
+                        class="input input-bordered w-full {% if form.start_date.errors %}input-error{% endif %}"
+                        required
+                    >
+                    {% if form.start_date.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.start_date.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Active Status Field -->
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text font-semibold">Active Flow</span>
+                        <input 
+                            type="checkbox" 
+                            name="is_active" 
+                            class="toggle toggle-primary" 
+                            {% if flow.is_active %}checked{% endif %}
+                        >
+                    </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-control pt-4">
+                    <div class="flex gap-4 justify-end">
+                        <a href="{% url 'flow_builder:flow_detail' flow.pk %}" class="btn btn-outline">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Update Flow
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

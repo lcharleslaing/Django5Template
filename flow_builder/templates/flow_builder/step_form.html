@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if step %}Edit Step{% else %}Add Step{% endif %} - {{ flow.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            {% if step %}Edit Step{% else %}Add New Step{% endif %}
+        </h1>
+        <p class="text-gray-600">{% if step %}Update step details{% else %}Add a new step to the workflow{% endif %}</p>
+        <div class="text-sm text-gray-500 mt-2">
+            Flow: <span class="font-semibold">{{ flow.name }}</span>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Step Title Field -->
+                <div class="form-control">
+                    <label for="{{ form.title.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Step Title</span>
+                        <span class="label-text-alt text-error">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="{{ form.title.name }}" 
+                        id="{{ form.title.id_for_label }}"
+                        value="{{ form.title.value|default:step.title|default:'' }}"
+                        placeholder="Enter step title"
+                        class="input input-bordered w-full {% if form.title.errors %}input-error{% endif %}"
+                        required
+                    >
+                    {% if form.title.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.title.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-control">
+                    <label for="{{ form.description.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Description</span>
+                    </label>
+                    <textarea 
+                        name="{{ form.description.name }}" 
+                        id="{{ form.description.id_for_label }}"
+                        placeholder="Describe what this step involves"
+                        class="textarea textarea-bordered w-full h-24 {% if form.description.errors %}textarea-error{% endif %}"
+                        rows="3"
+                    >{{ form.description.value|default:step.description|default:'' }}</textarea>
+                    {% if form.description.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Responsible Person Field -->
+                <div class="form-control">
+                    <label for="{{ form.responsible_person.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Responsible Person</span>
+                    </label>
+                    <select 
+                        name="{{ form.responsible_person.name }}" 
+                        id="{{ form.responsible_person.id_for_label }}"
+                        class="select select-bordered w-full {% if form.responsible_person.errors %}select-error{% endif %}"
+                    >
+                        <option value="">Select a person (optional)</option>
+                        {% for person in people %}
+                            <option value="{{ person.id }}" 
+                                {% if form.responsible_person.value == person.id or step.responsible_person.id == person.id %}selected{% endif %}>
+                                {{ person.name }} ({{ person.department.name }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.responsible_person.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.responsible_person.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Time Allotted Field -->
+                <div class="form-control">
+                    <label for="{{ form.time_allotted_days.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Time Allotted (Days)</span>
+                        <span class="label-text-alt text-error">*</span>
+                    </label>
+                    <input 
+                        type="number" 
+                        name="{{ form.time_allotted_days.name }}" 
+                        id="{{ form.time_allotted_days.id_for_label }}"
+                        value="{{ form.time_allotted_days.value|default:step.time_allotted_days|default:1 }}"
+                        placeholder="Number of days"
+                        min="1"
+                        max="365"
+                        class="input input-bordered w-full {% if form.time_allotted_days.errors %}input-error{% endif %}"
+                        required
+                    >
+                    {% if form.time_allotted_days.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.time_allotted_days.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Dependencies Field -->
+                {% if form.dependencies %}
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">Dependencies</span>
+                        <span class="label-text-alt">Steps that must complete before this one</span>
+                    </label>
+                    <div class="space-y-2">
+                        {% for choice in form.dependencies %}
+                            <label class="label cursor-pointer">
+                                <span class="label-text">{{ choice.choice_label }}</span>
+                                {{ choice.tag }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.dependencies.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.dependencies.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="form-control pt-4">
+                    <div class="flex gap-4 justify-end">
+                        <a href="{% url 'flow_builder:flow_detail' flow.pk %}" class="btn btn-outline">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {% if step %}Update Step{% else %}Add Step{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

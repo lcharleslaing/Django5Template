@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh]">
+    <div class="card w-96 bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title justify-center mb-4">Create Account</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-control mb-4">
+                    <label for="id_username" class="label">
+                        <span class="label-text">Username</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="id_username"
+                        class="input input-bordered w-full {% if form.username.errors %}input-error{% endif %}"
+                        required
+                        autofocus
+                        value="{{ form.username.value|default_if_none:'' }}"
+                        maxlength="150"
+                        autocomplete="username"
+                    >
+                    {% if form.username.errors %}
+                        <div class="text-error text-sm mt-1">
+                            {{ form.username.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-control mb-4">
+                    <label for="id_password1" class="label">
+                        <span class="label-text">Password</span>
+                    </label>
+                    <input
+                        type="password"
+                        name="password1"
+                        id="id_password1"
+                        class="input input-bordered w-full {% if form.password1.errors %}input-error{% endif %}"
+                        required
+                        autocomplete="new-password"
+                    >
+                    {% if form.password1.errors %}
+                        <div class="text-error text-sm mt-1">
+                            {{ form.password1.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-control mb-4">
+                    <label for="id_password2" class="label">
+                        <span class="label-text">Confirm Password</span>
+                    </label>
+                    <input
+                        type="password"
+                        name="password2"
+                        id="id_password2"
+                        class="input input-bordered w-full {% if form.password2.errors %}input-error{% endif %}"
+                        required
+                        autocomplete="new-password"
+                    >
+                    {% if form.password2.errors %}
+                        <div class="text-error text-sm mt-1">
+                            {{ form.password2.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if form.non_field_errors %}
+                    <div class="text-error text-sm mb-2">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary w-full mt-6">Create Account</button>
+            </form>
+            <div class="text-center mt-4 space-y-1">
+                <a href="{% url 'login' %}" class="link link-primary">Already have an account? Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

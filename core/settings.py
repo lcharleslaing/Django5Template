@@ -62,6 +62,8 @@ INSTALLED_APPS = [
     'search',  # Added
     'surveys',  # Added
     'equipment_bom',  # Added
+    'app_management',  # Added for app visibility control
+    'flow_builder',  # Added for workflow management
 ]
 
 # Temporarily disabled browser reload to debug process issues
@@ -107,6 +109,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'surveys.context.surveys_context',
+                'app_management.context_processors.app_visibility',
             ],
         },
     },

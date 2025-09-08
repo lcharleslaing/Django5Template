@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Subscription Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Subscription Dashboard</h1>
+        <p class="text-gray-600">Manage your subscription and view available apps</p>
+    </div>
+
+    <!-- Current Subscription Status -->
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-4">Current Subscription</h2>
+            {% if subscription_info %}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="stat bg-primary text-primary-content rounded-lg">
+                        <div class="stat-title text-primary-content">Plan</div>
+                        <div class="stat-value text-2xl">{{ subscription_info.plan.name }}</div>
+                        <div class="stat-desc">${{ subscription_info.plan.price }}/month</div>
+                    </div>
+                    <div class="stat bg-{% if subscription_info.is_active %}success{% else %}error{% endif %} text-{% if subscription_info.is_active %}success-content{% else %}error-content{% endif %} rounded-lg">
+                        <div class="stat-title">Status</div>
+                        <div class="stat-value text-2xl">
+                            {% if subscription_info.is_active %}
+                                {% if subscription_info.is_expired %}
+                                    Expired
+                                {% else %}
+                                    Active
+                                {% endif %}
+                            {% else %}
+                                Inactive
+                            {% endif %}
+                        </div>
+                        {% if subscription_info.expires_at %}
+                        <div class="stat-desc">Expires: {{ subscription_info.expires_at|date:"M d, Y" }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="stat bg-info text-info-content rounded-lg">
+                        <div class="stat-title">Max Users</div>
+                        <div class="stat-value text-2xl">{{ subscription_info.plan.max_users }}</div>
+                        <div class="stat-desc">Team members</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600">{{ subscription_info.plan.description }}</p>
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <div class="text-6xl mb-4">📋</div>
+                    <h3 class="text-xl font-semibold mb-2">No Active Subscription</h3>
+                    <p class="text-gray-600 mb-4">You don't have an active subscription plan assigned.</p>
+                    <a href="{% url 'app_management:available_plans' %}" class="btn btn-primary">View Available Plans</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Available Apps -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-4">Available Apps</h2>
+            {% if visible_apps %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for app_info in visible_apps %}
+                        <div class="card bg-base-200 shadow-md">
+                            <div class="card-body">
+                                <div class="flex items-center mb-3">
+                                    {% if app_info.app.icon_svg %}
+                                        <svg class="{{ app_info.app.icon_class|default:'w-6 h-6' }} mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ app_info.app.icon_svg }}" />
+                                        </svg>
+                                    {% else %}
+                                        <svg class="{{ app_info.app.icon_class|default:'w-6 h-6' }} mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    {% endif %}
+                                    <h3 class="card-title text-lg">{{ app_info.app.display_name }}</h3>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-4">{{ app_info.app.description }}</p>
+                                
+                                <!-- Permissions -->
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm">
+                                        <span class="w-2 h-2 bg-{% if app_info.permissions.can_access %}success{% else %}error{% endif %} rounded-full mr-2"></span>
+                                        Access: {% if app_info.permissions.can_access %}Allowed{% else %}Denied{% endif %}
+                                    </div>
+                                    {% if app_info.permissions.can_access %}
+                                        <div class="flex items-center text-sm">
+                                            <span class="w-2 h-2 bg-{% if app_info.permissions.can_create %}success{% else %}error{% endif %} rounded-full mr-2"></span>
+                                            Create: {% if app_info.permissions.can_create %}Allowed{% else %}Denied{% endif %}
+                                        </div>
+                                        <div class="flex items-center text-sm">
+                                            <span class="w-2 h-2 bg-{% if app_info.permissions.can_edit %}success{% else %}error{% endif %} rounded-full mr-2"></span>
+                                            Edit: {% if app_info.permissions.can_edit %}Allowed{% else %}Denied{% endif %}
+                                        </div>
+                                        <div class="flex items-center text-sm">
+                                            <span class="w-2 h-2 bg-{% if app_info.permissions.can_delete %}success{% else %}error{% endif %} rounded-full mr-2"></span>
+                                            Delete: {% if app_info.permissions.can_delete %}Allowed{% else %}Denied{% endif %}
+                                        </div>
+                                        <div class="flex items-center text-sm">
+                                            <span class="w-2 h-2 bg-{% if app_info.permissions.can_export %}success{% else %}error{% endif %} rounded-full mr-2"></span>
+                                            Export: {% if app_info.permissions.can_export %}Allowed{% else %}Denied{% endif %}
+                                        </div>
+                                        <div class="flex items-center text-sm">
+                                            <span class="w-2 h-2 bg-{% if app_info.permissions.can_import %}success{% else %}error{% endif %} rounded-full mr-2"></span>
+                                            Import: {% if app_info.permissions.can_import %}Allowed{% else %}Denied{% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if app_info.permissions.can_access %}
+                                    <a href="{% url app_info.app.url_name %}" class="btn btn-primary btn-sm w-full">
+                                        Open App
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-disabled btn-sm w-full" disabled>
+                                        Access Denied
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <div class="text-6xl mb-4">🚫</div>
+                    <h3 class="text-xl font-semibold mb-2">No Apps Available</h3>
+                    <p class="text-gray-600 mb-4">You don't have access to any apps with your current subscription.</p>
+                    <a href="{% url 'app_management:available_plans' %}" class="btn btn-primary">Upgrade Plan</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ flow.name }} - Flow Details{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ flow.name }}</h1>
+                <p class="text-gray-600 mb-4">{{ flow.description }}</p>
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span>Start Date: {{ flow.start_date }}</span>
+                    <span>•</span>
+                    <span>{{ steps|length }} step{{ steps|length|pluralize }}</span>
+                    <span>•</span>
+                    <span class="badge badge-{% if flow.is_active %}success{% else %}error{% endif %}">
+                        {% if flow.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <a href="{% url 'flow_builder:flow_edit' flow.pk %}" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Flow
+                </a>
+                <a href="{% url 'flow_builder:flow_list' %}" class="btn btn-outline btn-sm">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Flows
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if steps %}
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="card-title text-xl">Flow Steps</h2>
+                    <button class="btn btn-primary btn-sm" onclick="addStep()">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Step
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr>
+                                <th>Step</th>
+                                <th>Responsible</th>
+                                <th>Status</th>
+                                <th>Planned Dates</th>
+                                <th>Actual Dates</th>
+                                <th>Tasks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for step in steps %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <div class="font-semibold">{{ step.title }}</div>
+                                            {% if step.description %}
+                                                <div class="text-sm text-gray-500">{{ step.description|truncatewords:10 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if step.responsible_person %}
+                                            <div class="flex items-center">
+                                                <div class="avatar placeholder">
+                                                    <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                                        <span class="text-xs">{{ step.responsible_person.name|first }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-2">
+                                                    <div class="font-medium">{{ step.responsible_person.name }}</div>
+                                                    <div class="text-sm text-gray-500">{{ step.responsible_person.department.name }}</div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-400">Unassigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if step.get_status == "Completed" %}
+                                            <span class="badge badge-success">Completed</span>
+                                        {% elif step.get_status == "Overdue" %}
+                                            <span class="badge badge-error">Overdue</span>
+                                        {% elif step.get_status == "In Progress" %}
+                                            <span class="badge badge-warning">In Progress</span>
+                                        {% elif step.get_status == "Due Soon" %}
+                                            <span class="badge badge-info">Due Soon</span>
+                                        {% else %}
+                                            <span class="badge badge-ghost">Not Started</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if step.planned_start_date and step.planned_end_date %}
+                                            <div class="text-sm">
+                                                <div>Start: {{ step.planned_start_date }}</div>
+                                                <div>End: {{ step.planned_end_date }}</div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-400">Not planned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if step.actual_start_date or step.actual_end_date %}
+                                            <div class="text-sm">
+                                                {% if step.actual_start_date %}
+                                                    <div>Start: {{ step.actual_start_date }}</div>
+                                                {% endif %}
+                                                {% if step.actual_end_date %}
+                                                    <div>End: {{ step.actual_end_date }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-400">No actual dates</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if step.tasks.exists %}
+                                            <div class="dropdown dropdown-end">
+                                                <div tabindex="0" role="button" class="btn btn-sm btn-outline">
+                                                    {{ step.tasks.count }} task{{ step.tasks.count|pluralize }}
+                                                </div>
+                                                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-64">
+                                                    {% for task in step.tasks.all %}
+                                                        <li>
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="{% if task.is_completed %}line-through text-gray-500{% endif %}">
+                                                                    {{ task.title }}
+                                                                </span>
+                                                                {% if task.is_completed %}
+                                                                    <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                                    </svg>
+                                                                {% endif %}
+                                                            </div>
+                                                            {% if task.due_date %}
+                                                                <div class="text-xs text-gray-500">Due: {{ task.due_date }}</div>
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-400">No tasks</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <button class="btn btn-xs btn-outline" onclick="editStep({{ step.id }})">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                            <button class="btn btn-xs btn-outline" onclick="addTask({{ step.id }})">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                </svg>
+                                            </button>
+                                            {% if step.get_status == "Not Started" %}
+                                            <button class="btn btn-xs btn-success" onclick="startStep({{ step.id }})">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                            </button>
+                                            {% elif step.get_status == "In Progress" %}
+                                            <button class="btn btn-xs btn-warning" onclick="completeStep({{ step.id }})">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">📝</div>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">No Steps Added Yet</h2>
+            <p class="text-gray-600 mb-6">This flow doesn't have any steps yet. Add steps through the admin interface.</p>
+            <a href="/admin/flow_builder/flow/{{ flow.pk }}/change/" class="btn btn-primary">
+                Add Steps in Admin
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function addStep() {
+    // Redirect to add step form
+    window.location.href = "{% url 'flow_builder:add_step' flow.pk %}";
+}
+
+function editStep(stepId) {
+    // Redirect to edit step form
+    window.location.href = "{% url 'flow_builder:edit_step' flow.pk 0 %}".replace('0', stepId);
+}
+
+function addTask(stepId) {
+    // Redirect to add task form
+    window.location.href = "{% url 'flow_builder:add_task' flow.pk 0 %}".replace('0', stepId);
+}
+
+function startStep(stepId) {
+    // Mark step as started
+    if (confirm('Mark this step as started?')) {
+        // You can implement AJAX call here or redirect to a view
+        window.location.href = "{% url 'flow_builder:start_step' flow.pk 0 %}".replace('0', stepId);
+    }
+}
+
+function completeStep(stepId) {
+    // Mark step as completed
+    if (confirm('Mark this step as completed?')) {
+        // You can implement AJAX call here or redirect to a view
+        window.location.href = "{% url 'flow_builder:complete_step' flow.pk 0 %}".replace('0', stepId);
+    }
+}
+</script>
+{% endblock %}

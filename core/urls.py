@@ -24,6 +24,10 @@ urlpatterns = [
     path('surveys/', include(('surveys.urls', 'surveys'), namespace='surveys')),
     # Equipment BOM functionality
     path('equipment/', include('equipment_bom.urls')),
+    # App Management functionality
+    path('app-management/', include('app_management.urls')),
+    # Flow Builder functionality
+    path('flow-builder/', include('flow_builder.urls')),
     # Registration page
     path('register/', register, name='register'),  # User registration
     # Login page using Django's built-in view
