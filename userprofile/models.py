@@ -8,6 +8,7 @@ import os
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    person = models.ForeignKey('flow_builder.Person', on_delete=models.SET_NULL, null=True, blank=True, related_name='user_profiles')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default='avatars/default.png')
     bio = models.TextField(max_length=500, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -33,10 +34,13 @@ class UserProfile(models.Model):
             self.resize_avatar()
 
     def resize_avatar(self):
-        """Resize avatar to 300x300 pixels"""
+        """Resize avatar to 300x300 pixels and fix orientation"""
         if self.avatar:
             try:
                 with PILImage.open(self.avatar.path) as img:
+                    # Fix orientation based on EXIF data
+                    img = self._fix_image_orientation(img)
+                    
                     # Convert to RGB if necessary
                     if img.mode != 'RGB':
                         img = img.convert('RGB')
@@ -48,6 +52,28 @@ class UserProfile(models.Model):
                     img.save(self.avatar.path, 'JPEG', quality=85)
             except Exception as e:
                 print(f"Error resizing avatar: {e}")
+
+    def _fix_image_orientation(self, img):
+        """Fix image orientation based on EXIF data"""
+        try:
+            # Check if image has EXIF data
+            if hasattr(img, '_getexif'):
+                exif = img._getexif()
+                if exif is not None:
+                    # Get orientation tag (274)
+                    orientation = exif.get(274)
+                    if orientation:
+                        # Rotate image based on orientation
+                        if orientation == 3:
+                            img = img.rotate(180, expand=True)
+                        elif orientation == 6:
+                            img = img.rotate(270, expand=True)
+                        elif orientation == 8:
+                            img = img.rotate(90, expand=True)
+        except Exception as e:
+            print(f"Error fixing image orientation: {e}")
+        
+        return img
 
     @property
     def full_name(self):

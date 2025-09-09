@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Excel Templates - Equipment BOM{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Excel Templates</h1>
+            <p class="text-gray-600 mt-2">Available Excel templates for data import</p>
+        </div>
+        <a href="{% url 'equipment_bom:dashboard' %}" class="btn btn-outline">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Instructions -->
+    <div class="alert alert-info mb-6">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+            <h3 class="font-semibold">How to use Excel templates:</h3>
+            <ul class="list-disc list-inside mt-2 text-sm">
+                <li>Store your Excel files in the <code>equipment_bom/excel_templates/</code> directory</li>
+                <li>Ensure your Excel files have the correct sheet names: <strong>Import Heater</strong>, <strong>Import Tank</strong>, <strong>Pump</strong>, or <strong>Stack Economizer</strong></li>
+                <li>Include required columns: <strong>Item Number</strong> and <strong>Description</strong></li>
+                <li>Use the <a href="{% url 'equipment_bom:import_excel' %}" class="link link-primary">Import Excel</a> page to upload and process your files</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Supported Types -->
+    <div class="card bg-base-100 shadow-sm mb-6">
+        <div class="card-body">
+            <h2 class="card-title text-lg">Supported Equipment Types</h2>
+            <div class="flex flex-wrap gap-2 mt-4">
+                {% for type in supported_types %}
+                <div class="badge badge-primary badge-lg">{{ type }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates List -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title text-lg mb-4">Available Templates</h2>
+            
+            {% if templates %}
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Equipment Type</th>
+                                <th>File Size</th>
+                                <th>Sheets</th>
+                                <th>Last Modified</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for template in templates %}
+                            <tr>
+                                <td>
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <span class="font-mono text-sm">{{ template.filename }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="badge badge-primary">{{ template.equipment_type }}</div>
+                                </td>
+                                <td>{{ template.file_size_mb }} MB</td>
+                                <td>
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for sheet in template.sheet_names %}
+                                        <span class="badge badge-outline badge-sm">{{ sheet }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>{{ template.last_modified|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <div class="flex gap-2">
+                                        <a href="{% url 'equipment_bom:import_excel' %}?template={{ template.filename }}" class="btn btn-sm btn-primary">
+                                            Import
+                                        </a>
+                                        <button class="btn btn-sm btn-outline" onclick="previewTemplate('{{ template.filename }}', '{{ template.equipment_type }}')">
+                                            Preview
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">No Excel templates found</h3>
+                    <p class="text-gray-600 mb-4">Place your Excel files in the <code>equipment_bom/excel_templates/</code> directory</p>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-500">Supported file formats: .xlsx, .xls</p>
+                        <p class="text-sm text-gray-500">Required sheet names: Import Heater, Import Tank, Pump, Stack Economizer</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="modal">
+    <div class="modal-box max-w-4xl">
+        <h3 class="font-bold text-lg mb-4">Template Preview</h3>
+        <div id="previewContent">
+            <!-- Preview content will be loaded here -->
+        </div>
+        <div class="modal-action">
+            <button class="btn" onclick="closePreview()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewTemplate(filename, equipmentType) {
+    // This would typically make an AJAX call to get template preview
+    // For now, just show a placeholder
+    document.getElementById('previewContent').innerHTML = `
+        <div class="alert alert-info">
+            <p>Preview for <strong>${filename}</strong> (${equipmentType})</p>
+            <p class="text-sm mt-2">This feature would show a preview of the Excel file structure and sample data.</p>
+        </div>
+    `;
+    document.getElementById('previewModal').classList.add('modal-open');
+}
+
+function closePreview() {
+    document.getElementById('previewModal').classList.remove('modal-open');
+}
+</script>
+{% endblock %}

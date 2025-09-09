@@ -29,7 +29,7 @@
                         type="text" 
                         name="{{ form.title.name }}" 
                         id="{{ form.title.id_for_label }}"
-                        value="{{ form.title.value|default:step.title|default:'' }}"
+                        value="{% if step and step.title %}{{ form.title.value|default:step.title|default:'' }}{% else %}{{ form.title.value|default:'' }}{% endif %}"
                         placeholder="Enter step title"
                         class="input input-bordered w-full {% if form.title.errors %}input-error{% endif %}"
                         required
@@ -52,7 +52,7 @@
                         placeholder="Describe what this step involves"
                         class="textarea textarea-bordered w-full h-24 {% if form.description.errors %}textarea-error{% endif %}"
                         rows="3"
-                    >{{ form.description.value|default:step.description|default:'' }}</textarea>
+                    >{% if step and step.description %}{{ form.description.value|default:step.description|default:'' }}{% else %}{{ form.description.value|default:'' }}{% endif %}</textarea>
                     {% if form.description.errors %}
                         <label class="label">
                             <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
@@ -60,30 +60,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Responsible Person Field -->
-                <div class="form-control">
-                    <label for="{{ form.responsible_person.id_for_label }}" class="label">
-                        <span class="label-text font-semibold">Responsible Person</span>
-                    </label>
-                    <select 
-                        name="{{ form.responsible_person.name }}" 
-                        id="{{ form.responsible_person.id_for_label }}"
-                        class="select select-bordered w-full {% if form.responsible_person.errors %}select-error{% endif %}"
-                    >
-                        <option value="">Select a person (optional)</option>
-                        {% for person in people %}
-                            <option value="{{ person.id }}" 
-                                {% if form.responsible_person.value == person.id or step.responsible_person.id == person.id %}selected{% endif %}>
-                                {{ person.name }} ({{ person.department.name }})
-                            </option>
-                        {% endfor %}
-                    </select>
-                    {% if form.responsible_person.errors %}
-                        <label class="label">
-                            <span class="label-text-alt text-error">{{ form.responsible_person.errors.0 }}</span>
-                        </label>
-                    {% endif %}
-                </div>
 
                 <!-- Time Allotted Field -->
                 <div class="form-control">
@@ -95,7 +71,7 @@
                         type="number" 
                         name="{{ form.time_allotted_days.name }}" 
                         id="{{ form.time_allotted_days.id_for_label }}"
-                        value="{{ form.time_allotted_days.value|default:step.time_allotted_days|default:1 }}"
+                        value="{% if step and step.time_allotted_days %}{{ form.time_allotted_days.value|default:step.time_allotted_days|default:1 }}{% else %}{{ form.time_allotted_days.value|default:1 }}{% endif %}"
                         placeholder="Number of days"
                         min="1"
                         max="365"

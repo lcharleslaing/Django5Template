@@ -49,41 +49,26 @@
 
         <!-- Stats Overview Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-            {% for stat in stats %}
-            <a href="
-                {% if stat.label == 'AI Prompts' %}{% url 'prompts:prompt_list' %}
-                {% elif stat.label == 'Subscriptions' %}{% url 'subscriptions:subscription_list' %}
-                {% elif stat.label == 'Files' %}{% url 'files:file_list' %}
-                {% elif stat.label == 'Images' %}{% url 'images:image_list' %}
-                {% elif stat.label == 'Song Prompts' %}{% url 'suno_prompt_builder:prompt_builder' %}
-                {% else %}#{% endif %}
-            " class="group bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6 hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 cursor-pointer block clickable-tile">
+            {% for app_info in visible_apps %}
+                {% if app_info.permissions.can_access %}
+                <a href="{% url app_info.app.url_name %}" class="group bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6 hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 cursor-pointer block clickable-tile">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600 mb-1">{{ stat.label }}</p>
-                        <p class="text-3xl font-bold text-gray-900" data-count="{{ stat.count }}">{{ stat.count }}</p>
-                        {% if stat.new_this_week %}
-                        <div class="flex items-center mt-2">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
-                                </svg>
-                                +{{ stat.new_this_week }} new
-                            </span>
-                        </div>
-                        {% endif %}
+                        <p class="text-sm font-medium text-gray-600 mb-1">{{ app_info.app.display_name }}</p>
+                        <p class="text-3xl font-bold text-gray-900">0</p>
                     </div>
-                    <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br {{ stat.icon_bg }} text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {% if stat.icon_path %}
-                                {{ stat.icon_path|safe }}
+                            {% if app_info.app.icon_svg %}
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ app_info.app.icon_svg }}" />
                             {% else %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             {% endif %}
                         </svg>
                     </div>
                 </div>
             </a>
+                {% endif %}
             {% endfor %}
         </div>
 
@@ -116,143 +101,44 @@
             <!-- Left Column: AI Tools & Creative Content -->
             <div class="lg:col-span-2 space-y-8">
 
-                <!-- Your AI Tools Section -->
+                <!-- Your Apps Section -->
                 <div class="bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6">
                     <div class="flex items-center justify-between mb-6">
-                        <a href="{% url 'prompts:prompt_list' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
+                        <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
-                            <h2 class="text-2xl font-bold text-gray-900">Your AI Tools</h2>
-                        </a>
-                        <a href="{% url 'prompts:prompt_list' %}" class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center hover:scale-105 transition-transform">
-                            View all
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
+                            <h2 class="text-2xl font-bold text-gray-900">Your Apps</h2>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <a href="{% url 'prompts:prompt_list' %}" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 hover:shadow-md transition-shadow cursor-pointer block clickable-tile">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">Prompts</h3>
-                                    <p class="text-sm text-gray-600">
-                                        {% for stat in stats %}
-                                            {% if stat.label == 'AI Prompts' %}
-                                                {{ stat.count }}
+                        {% for app_info in visible_apps %}
+                            {% if app_info.permissions.can_access %}
+                            <a href="{% url app_info.app.url_name %}" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 hover:shadow-md transition-shadow cursor-pointer block clickable-tile">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            {% if app_info.app.icon_svg %}
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ app_info.app.icon_svg }}" />
+                                            {% else %}
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             {% endif %}
-                                        {% endfor %} total
-                                    </p>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">{{ app_info.app.display_name }}</h3>
+                                        <p class="text-sm text-gray-600">0 items</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-
-                        <a href="{% url 'suno_prompt_builder:prompt_builder' %}" class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-4 border border-yellow-100 hover:shadow-md transition-shadow cursor-pointer block">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">Song Prompts</h3>
-                                    <p class="text-sm text-gray-600">
-                                        {% for stat in stats %}
-                                            {% if stat.label == 'Song Prompts' %}
-                                                {{ stat.count }}
-                                            {% endif %}
-                                        {% endfor %} created
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="{% url 'subscriptions:subscription_list' %}" class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100 hover:shadow-md transition-shadow cursor-pointer block">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">Subscriptions</h3>
-                                    <p class="text-sm text-gray-600">
-                                        {% for stat in stats %}
-                                            {% if stat.label == 'Subscriptions' %}
-                                                {{ stat.count }}
-                                            {% endif %}
-                                        {% endfor %} active
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
+                            </a>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
 
-                <!-- Creative Content Section -->
-                <div class="bg-white/80 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <a href="{% url 'images:image_list' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
-                            <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
-                                </svg>
-                            </div>
-                            <h2 class="text-2xl font-bold text-gray-900">Creative Content</h2>
-                        </a>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <a href="{% url 'images:image_list' %}" class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100 hover:shadow-md transition-shadow cursor-pointer block">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">Images</h3>
-                                    <p class="text-sm text-gray-600">
-                                        {% for stat in stats %}
-                                            {% if stat.label == 'Images' %}
-                                                {{ stat.count }}
-                                            {% endif %}
-                                        {% endfor %} uploaded
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="{% url 'files:file_list' %}" class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-100 hover:shadow-md transition-shadow cursor-pointer block">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">Files</h3>
-                                    <p class="text-sm text-gray-600">
-                                        {% for stat in stats %}
-                                            {% if stat.label == 'Files' %}
-                                                {{ stat.count }}
-                                            {% endif %}
-                                        {% endfor %} stored
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
             </div>
 
             <!-- Right Column: Recent Activity -->
@@ -310,55 +196,23 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    <a href="{% url 'prompts:prompt_create' %}" class="group bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-1">Create Prompt</h3>
-                        <p class="text-sm text-gray-600">Build a new AI prompt</p>
-                    </a>
-
-                    <a href="{% url 'suno_prompt_builder:prompt_builder' %}" class="group bg-gradient-to-br from-yellow-50 to-amber-50 hover:from-yellow-100 hover:to-amber-100 border border-yellow-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                        <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                            </svg>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-1">Suno Builder</h3>
-                        <p class="text-sm text-gray-600">Create song prompts</p>
-                    </a>
-
-                    <a href="{% url 'subscriptions:subscription_create' %}" class="group bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                        <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                            </svg>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-1">Add Subscription</h3>
-                        <p class="text-sm text-gray-600">Track a new service</p>
-                    </a>
-
-                    <a href="{% url 'files:file_upload' %}" class="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-1">Upload File</h3>
-                        <p class="text-sm text-gray-600">Store a document</p>
-                    </a>
-
-                    <a href="{% url 'images:image_upload' %}" class="group bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border border-orange-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                        <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-1">Upload Image</h3>
-                        <p class="text-sm text-gray-600">Add a photo</p>
-                    </a>
+                    {% for app_info in visible_apps %}
+                        {% if app_info.permissions.can_access %}
+                        <a href="{% url app_info.app.url_name %}" class="group bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {% if app_info.app.icon_svg %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ app_info.app.icon_svg }}" />
+                                    {% else %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    {% endif %}
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-900 mb-1">{{ app_info.app.display_name }}</h3>
+                            <p class="text-sm text-gray-600">Access app</p>
+                        </a>
+                        {% endif %}
+                    {% endfor %}
                 </div>
             </div>
         </div>

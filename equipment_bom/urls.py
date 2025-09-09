@@ -30,6 +30,9 @@ urlpatterns = [
     path('templates/create/', views.bom_template_create, name='bom_template_create'),
     path('templates/<int:template_id>/edit/', views.bom_template_edit, name='bom_template_edit'),
     
+    # Excel Templates
+    path('excel-templates/', views.excel_templates, name='excel_templates'),
+    
     # Import/Export
     path('import/', views.import_excel, name='import_excel'),
     path('import/logs/', views.import_logs, name='import_logs'),

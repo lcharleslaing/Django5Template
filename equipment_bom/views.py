@@ -16,6 +16,7 @@ from .models import (
 )
 from .excel_importer import ExcelBOMImporter
 from .forms import JobForm, EquipmentItemForm, HeaterForm, TankForm, PumpForm, StackEconomizerForm, MaterialForm, BOMTemplateForm
+from .template_utils import ExcelTemplateDiscovery
 
 @login_required
 def dashboard(request):
@@ -590,3 +591,17 @@ def bom_template_edit(request, template_id):
         'submit_text': 'Update Template'
     }
     return render(request, 'equipment_bom/bom_template_form.html', context)
+
+
+@login_required
+def excel_templates(request):
+    """Display available Excel templates"""
+    discovery = ExcelTemplateDiscovery()
+    templates = discovery.get_available_templates()
+    
+    context = {
+        'templates': templates,
+        'supported_types': discovery.supported_types,
+    }
+    
+    return render(request, 'equipment_bom/excel_templates.html', context)

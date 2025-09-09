@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils.decorators import method_decorator
 from .models import Flow, Step, Task, Person
 from .forms import FlowForm, StepForm, TaskForm
 
@@ -47,9 +49,22 @@ class FlowEditView(UpdateView):
     
     def form_valid(self, form):
         self.object = form.save()
-        self.object.recalculate_dates()
         messages.success(self.request, 'Flow updated successfully!')
         return super().form_valid(form)
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class FlowDeleteView(DeleteView):
+    model = Flow
+    template_name = 'flow_builder/flow_confirm_delete.html'
+    success_url = reverse_lazy('flow_builder:flow_list')
+    
+    def delete(self, request, *args, **kwargs):
+        flow = self.get_object()
+        flow_name = flow.name
+        response = super().delete(request, *args, **kwargs)
+        messages.success(request, f'Flow "{flow_name}" has been deleted successfully!')
+        return response
 
 
 class StepCreateView(CreateView):
@@ -68,6 +83,7 @@ class StepCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['flow'] = self.get_flow()
+        context['step'] = None  # No step object when creating
         context['people'] = Person.objects.all()
         return context
     
@@ -131,6 +147,7 @@ class TaskCreateView(CreateView):
         context['flow'] = self.get_flow()
         context['step'] = self.get_step()
         context['task'] = None  # No task for create view
+        context['people'] = Person.objects.all()
         return context
     
     def form_valid(self, form):
@@ -149,19 +166,34 @@ class TaskEditView(UpdateView):
     template_name = 'flow_builder/task_form.html'
     
     def get_flow(self):
-        return get_object_or_404(Flow, pk=self.kwargs['flow_pk'])
+        if 'flow_pk' in self.kwargs:
+            return get_object_or_404(Flow, pk=self.kwargs['flow_pk'])
+        else:
+            # For direct task edit, get flow from the task's step
+            task = get_object_or_404(Task, pk=self.kwargs['pk'])
+            return task.step.flow
     
     def get_step(self):
-        return get_object_or_404(Step, pk=self.kwargs['step_pk'], flow=self.get_flow())
+        if 'step_pk' in self.kwargs:
+            return get_object_or_404(Step, pk=self.kwargs['step_pk'], flow=self.get_flow())
+        else:
+            # For direct task edit, get step from the task
+            task = get_object_or_404(Task, pk=self.kwargs['pk'])
+            return task.step
     
     def get_object(self):
-        return get_object_or_404(Task, pk=self.kwargs['pk'], step=self.get_step())
+        if 'step_pk' in self.kwargs:
+            return get_object_or_404(Task, pk=self.kwargs['pk'], step=self.get_step())
+        else:
+            # For direct task edit, just get the task
+            return get_object_or_404(Task, pk=self.kwargs['pk'])
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['flow'] = self.get_flow()
         context['step'] = self.get_step()
         context['task'] = self.get_object()
+        context['people'] = Person.objects.all()
         return context
     
     def form_valid(self, form):

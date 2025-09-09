@@ -79,7 +79,7 @@ TAILWIND_APP_NAME = 'theme'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Added for static file serving
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # Temporarily disabled for server startup
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -189,6 +189,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_URL = '/login/'
+
+# Session configuration - Extended timeout for development
+SESSION_COOKIE_AGE = 86400 * 7  # 7 days (in seconds)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session when browser closes
+SESSION_SAVE_EVERY_REQUEST = True  # Extend session on each request
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Security: prevent JavaScript access
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
 
 # Email backend for development: prints emails to the console.
 # Use an SMTP backend in production for real email delivery.

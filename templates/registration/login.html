@@ -35,6 +35,19 @@
                         required
                     >
                 </div>
+                
+                <!-- Remember Me checkbox -->
+                <div class="form-control mb-4">
+                    <label class="label cursor-pointer justify-start">
+                        <input type="checkbox" name="remember_me" class="checkbox checkbox-primary mr-2" checked>
+                        <span class="label-text">Remember me for 7 days</span>
+                    </label>
+                    <div class="text-xs text-gray-500 mt-1 ml-6">
+                        ✓ Checked: Stay logged in for 7 days<br>
+                        ☐ Unchecked: Browser session only
+                    </div>
+                </div>
+                
                 {% if form.non_field_errors %}
                     <div class="text-error text-sm mb-2">
                         {{ form.non_field_errors }}

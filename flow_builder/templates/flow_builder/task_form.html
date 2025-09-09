@@ -60,6 +60,31 @@
                     {% endif %}
                 </div>
 
+                <!-- Responsible Person Field -->
+                <div class="form-control">
+                    <label for="{{ form.responsible_person.id_for_label }}" class="label">
+                        <span class="label-text font-semibold">Responsible Person</span>
+                    </label>
+                    <select 
+                        name="{{ form.responsible_person.name }}" 
+                        id="{{ form.responsible_person.id_for_label }}"
+                        class="select select-bordered w-full {% if form.responsible_person.errors %}select-error{% endif %}"
+                    >
+                        <option value="">Select a person (optional)</option>
+                        {% for person in people %}
+                            <option value="{{ person.id }}" 
+                                {% if form.responsible_person.value == person.id or task and task.responsible_person and task.responsible_person.id == person.id %}selected{% endif %}>
+                                {{ person.name }} ({{ person.department.name }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.responsible_person.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.responsible_person.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
                 <!-- Due Date Field -->
                 <div class="form-control">
                     <label for="{{ form.due_date.id_for_label }}" class="label">

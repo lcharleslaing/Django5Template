@@ -26,6 +26,14 @@
                     </svg>
                     Edit Flow
                 </a>
+                {% if user.is_staff %}
+                <a href="{% url 'flow_builder:flow_delete' flow.pk %}" class="btn btn-error btn-sm">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Delete Flow
+                </a>
+                {% endif %}
                 <a href="{% url 'flow_builder:flow_list' %}" class="btn btn-outline btn-sm">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -49,145 +57,213 @@
                     </button>
                 </div>
                 
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra w-full">
-                        <thead>
-                            <tr>
-                                <th>Step</th>
-                                <th>Responsible</th>
-                                <th>Status</th>
-                                <th>Planned Dates</th>
-                                <th>Actual Dates</th>
-                                <th>Tasks</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for step in steps %}
-                                <tr>
-                                    <td>
-                                        <div>
-                                            <div class="font-semibold">{{ step.title }}</div>
-                                            {% if step.description %}
-                                                <div class="text-sm text-gray-500">{{ step.description|truncatewords:10 }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% if step.responsible_person %}
-                                            <div class="flex items-center">
-                                                <div class="avatar placeholder">
-                                                    <div class="bg-neutral text-neutral-content rounded-full w-8">
-                                                        <span class="text-xs">{{ step.responsible_person.name|first }}</span>
-                                                    </div>
-                                                </div>
-                                                <div class="ml-2">
-                                                    <div class="font-medium">{{ step.responsible_person.name }}</div>
-                                                    <div class="text-sm text-gray-500">{{ step.responsible_person.department.name }}</div>
-                                                </div>
-                                            </div>
+                <!-- Steps as expandable cards -->
+                <div class="space-y-4">
+                    {% for step in steps %}
+                        <div class="card bg-base-200 shadow-sm" data-step-id="{{ step.id }}">
+                            <!-- Step Header -->
+                            <div class="card-body p-6">
+                                <!-- Title and Status Row -->
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1 min-h-[2.5rem]">
+                                        <h3 class="text-lg font-semibold text-gray-900">{{ step.title }}</h3>
+                                        {% if step.description %}
+                                            <p class="text-sm text-gray-600 mt-1 leading-relaxed">{{ step.description }}</p>
                                         {% else %}
-                                            <span class="text-gray-400">Unassigned</span>
+                                            <div class="h-4"></div> <!-- Spacer for consistent height -->
                                         {% endif %}
-                                    </td>
-                                    <td>
+                                    </div>
+                                    
+                                    <!-- Status Badge and Progress -->
+                                    <div class="flex flex-col items-end gap-2 ml-4">
                                         {% if step.get_status == "Completed" %}
-                                            <span class="badge badge-success">Completed</span>
+                                            <span class="badge badge-success badge-lg">Completed</span>
                                         {% elif step.get_status == "Overdue" %}
-                                            <span class="badge badge-error">Overdue</span>
+                                            <span class="badge badge-error badge-lg">Overdue</span>
                                         {% elif step.get_status == "In Progress" %}
-                                            <span class="badge badge-warning">In Progress</span>
+                                            <span class="badge badge-warning badge-lg">In Progress</span>
                                         {% elif step.get_status == "Due Soon" %}
-                                            <span class="badge badge-info">Due Soon</span>
+                                            <span class="badge badge-info badge-lg">Due Soon</span>
                                         {% else %}
-                                            <span class="badge badge-ghost">Not Started</span>
+                                            <span class="badge badge-ghost badge-lg">Not Started</span>
                                         {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if step.planned_start_date and step.planned_end_date %}
-                                            <div class="text-sm">
-                                                <div>Start: {{ step.planned_start_date }}</div>
-                                                <div>End: {{ step.planned_end_date }}</div>
+                                        
+                                        <!-- Progress Bar -->
+                                        {% if step.tasks.count > 0 %}
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs text-gray-500 font-medium">{{ step.progress_percentage }}%</span>
+                                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-primary h-2 rounded-full transition-all duration-300" 
+                                                         style="width: {{ step.progress_percentage }}%"></div>
+                                                </div>
                                             </div>
                                         {% else %}
-                                            <span class="text-gray-400">Not planned</span>
+                                            <div class="h-6"></div> <!-- Spacer for consistent height when no progress bar -->
                                         {% endif %}
-                                    </td>
-                                    <td>
+                                    </div>
+                                </div>
+                                
+                                <!-- Step Details Row -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <!-- Tasks Count -->
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tasks</label>
+                                        <div class="text-sm">
+                                            <span class="font-medium text-gray-900">{{ step.tasks.count }}</span>
+                                            <span class="text-gray-500">task{{ step.tasks.count|pluralize }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Planned Dates -->
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Planned Dates</label>
+                                        {% if step.planned_start_date and step.planned_end_date %}
+                                            <div class="text-sm space-y-1">
+                                                <div class="flex items-center">
+                                                    <span class="text-gray-500 w-12">Start:</span>
+                                                    <span class="font-medium">{{ step.planned_start_date }}</span>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <span class="text-gray-500 w-12">End:</span>
+                                                    <span class="font-medium">{{ step.planned_end_date }}</span>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-gray-400 text-sm italic">Not planned</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Actual Dates -->
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Actual Dates</label>
                                         {% if step.actual_start_date or step.actual_end_date %}
-                                            <div class="text-sm">
+                                            <div class="text-sm space-y-1">
                                                 {% if step.actual_start_date %}
-                                                    <div>Start: {{ step.actual_start_date }}</div>
+                                                    <div class="flex items-center">
+                                                        <span class="text-gray-500 w-12">Start:</span>
+                                                        <span class="font-medium">{{ step.actual_start_date }}</span>
+                                                    </div>
                                                 {% endif %}
                                                 {% if step.actual_end_date %}
-                                                    <div>End: {{ step.actual_end_date }}</div>
+                                                    <div class="flex items-center">
+                                                        <span class="text-gray-500 w-12">End:</span>
+                                                        <span class="font-medium">{{ step.actual_end_date }}</span>
+                                                    </div>
                                                 {% endif %}
                                             </div>
                                         {% else %}
-                                            <span class="text-gray-400">No actual dates</span>
+                                            <span class="text-gray-400 text-sm italic">No actual dates</span>
                                         {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if step.tasks.exists %}
-                                            <div class="dropdown dropdown-end">
-                                                <div tabindex="0" role="button" class="btn btn-sm btn-outline">
-                                                    {{ step.tasks.count }} task{{ step.tasks.count|pluralize }}
-                                                </div>
-                                                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-64">
-                                                    {% for task in step.tasks.all %}
-                                                        <li>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons and Tasks -->
+                                <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                                    <div class="flex gap-2">
+                                        <button class="btn btn-sm btn-outline" onclick="editStep({{ step.id }})" title="Edit Step">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline" onclick="addTask({{ step.id }})" title="Add Task">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                        </button>
+                                        {% if step.get_status == "Not Started" %}
+                                        <button class="btn btn-sm btn-success" onclick="startStep({{ step.id }})" title="Start Step">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </button>
+                                        {% elif step.get_status == "In Progress" %}
+                                        <button class="btn btn-sm btn-warning" onclick="completeStep({{ step.id }})" title="Complete Step">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Tasks Toggle Button -->
+                                    {% if step.tasks.exists %}
+                                        <button class="btn btn-sm btn-outline" onclick="toggleTasks({{ step.id }})" id="toggle-btn-{{ step.id }}">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                            {{ step.tasks.count }} task{{ step.tasks.count|pluralize }}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Tasks Section (Collapsible) -->
+                            {% if step.tasks.exists %}
+                                <div class="hidden" id="tasks-{{ step.id }}">
+                                    <div class="border-t border-base-300 bg-base-100">
+                                        <div class="p-4">
+                                            <h4 class="text-md font-semibold mb-3 text-gray-700">Tasks</h4>
+                                            <div class="space-y-3">
+                                                {% for task in step.tasks.all %}
+                                                    <div class="card bg-base-200 shadow-sm">
+                                                        <div class="card-body p-3">
                                                             <div class="flex items-center justify-between">
-                                                                <span class="{% if task.is_completed %}line-through text-gray-500{% endif %}">
-                                                                    {{ task.title }}
-                                                                </span>
-                                                                {% if task.is_completed %}
-                                                                    <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                                    </svg>
-                                                                {% endif %}
+                                                                <div class="flex-1">
+                                                                    <div class="flex items-center gap-3">
+                                                                        <input type="checkbox" class="checkbox checkbox-sm" {% if task.is_completed %}checked{% endif %} disabled>
+                                                                        <div class="flex-1">
+                                                                            <h5 class="font-medium {% if task.is_completed %}line-through text-gray-500{% endif %}">
+                                                                                {{ task.title }}
+                                                                            </h5>
+                                                                            {% if task.description %}
+                                                                                <p class="text-sm text-gray-600 mt-1">{{ task.description }}</p>
+                                                                            {% endif %}
+                                                                            
+                                                                            <div class="flex items-center gap-4 mt-2">
+                                                                                {% if task.responsible_person %}
+                                                                                    <div class="flex items-center gap-1">
+                                                                                        <div class="avatar placeholder">
+                                                                                            <div class="bg-neutral text-neutral-content rounded-full w-5">
+                                                                                                <span class="text-xs">{{ task.responsible_person.name|first }}</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <span class="text-xs text-gray-500">{{ task.responsible_person.name }}</span>
+                                                                                    </div>
+                                                                                {% endif %}
+                                                                                
+                                                                                {% if task.due_date %}
+                                                                                    <div class="text-xs text-gray-500">
+                                                                                        Due: {{ task.due_date }}
+                                                                                    </div>
+                                                                                {% endif %}
+                                                                                
+                                                                                {% if task.is_completed and task.completed_at %}
+                                                                                    <div class="text-xs text-green-600">
+                                                                                        Completed: {{ task.completed_at|date:"M j, Y" }}
+                                                                                    </div>
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex gap-1">
+                                                                    <button class="btn btn-xs btn-outline" onclick="editTask({{ task.id }})" title="Edit Task">
+                                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                            {% if task.due_date %}
-                                                                <div class="text-xs text-gray-500">Due: {{ task.due_date }}</div>
-                                                            {% endif %}
-                                                        </li>
-                                                    {% endfor %}
-                                                </ul>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
                                             </div>
-                                        {% else %}
-                                            <span class="text-gray-400">No tasks</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="flex gap-1">
-                                            <button class="btn btn-xs btn-outline" onclick="editStep({{ step.id }})">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                            </button>
-                                            <button class="btn btn-xs btn-outline" onclick="addTask({{ step.id }})">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                </svg>
-                                            </button>
-                                            {% if step.get_status == "Not Started" %}
-                                            <button class="btn btn-xs btn-success" onclick="startStep({{ step.id }})">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                            </button>
-                                            {% elif step.get_status == "In Progress" %}
-                                            <button class="btn btn-xs btn-warning" onclick="completeStep({{ step.id }})">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                            </button>
-                                            {% endif %}
                                         </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -219,6 +295,11 @@ function addTask(stepId) {
     window.location.href = "{% url 'flow_builder:add_task' flow.pk 0 %}".replace('0', stepId);
 }
 
+function editTask(taskId) {
+    // Redirect to edit task form
+    window.location.href = "{% url 'flow_builder:edit_task_direct' 0 %}".replace('0', taskId);
+}
+
 function startStep(stepId) {
     // Mark step as started
     if (confirm('Mark this step as started?')) {
@@ -234,5 +315,45 @@ function completeStep(stepId) {
         window.location.href = "{% url 'flow_builder:complete_step' flow.pk 0 %}".replace('0', stepId);
     }
 }
+
+function toggleTasks(stepId) {
+    const tasksDiv = document.getElementById('tasks-' + stepId);
+    const toggleBtn = document.getElementById('toggle-btn-' + stepId);
+    const icon = toggleBtn.querySelector('svg');
+    
+    if (tasksDiv.classList.contains('hidden')) {
+        // Show tasks
+        tasksDiv.classList.remove('hidden');
+        tasksDiv.classList.add('block');
+        icon.style.transform = 'rotate(180deg)';
+        toggleBtn.classList.add('btn-primary');
+        toggleBtn.classList.remove('btn-outline');
+    } else {
+        // Hide tasks
+        tasksDiv.classList.add('hidden');
+        tasksDiv.classList.remove('block');
+        icon.style.transform = 'rotate(0deg)';
+        toggleBtn.classList.remove('btn-primary');
+        toggleBtn.classList.add('btn-outline');
+    }
+}
+
+// Add smooth transitions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add transition classes to all task sections
+    const taskSections = document.querySelectorAll('[id^="tasks-"]');
+    taskSections.forEach(section => {
+        section.style.transition = 'all 0.3s ease-in-out';
+    });
+    
+    // Add transition to toggle buttons
+    const toggleButtons = document.querySelectorAll('[id^="toggle-btn-"]');
+    toggleButtons.forEach(button => {
+        const icon = button.querySelector('svg');
+        if (icon) {
+            icon.style.transition = 'transform 0.3s ease-in-out';
+        }
+    });
+});
 </script>
 {% endblock %}

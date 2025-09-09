@@ -2,10 +2,22 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib import messages
 from django.utils import timezone
+from django.conf import settings
 from datetime import datetime, timedelta
 from django.utils import timezone
+
+# QR Code imports with error handling
+try:
+    import qrcode
+    from io import BytesIO
+    import base64
+    import socket
+    QRCODE_AVAILABLE = True
+except ImportError:
+    QRCODE_AVAILABLE = False
 
 # User registration view
 def register(request):
@@ -27,50 +39,49 @@ def home(request):
     recent_activity = get_recent_activity(request.user)
 
     # Generate QR code for mobile testing
-    import qrcode
-    from io import BytesIO
-    import base64
-    import socket
+    qr_code_image = None
+    server_url = None
+    
+    if QRCODE_AVAILABLE:
+        # Get the current server URL
+        protocol = 'https' if request.is_secure() else 'http'
 
-    # Get the current server URL
-    protocol = 'https' if request.is_secure() else 'http'
+        # Get the actual IP address for mobile access
+        try:
+            # Get the local IP address
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+            server_url = f"{protocol}://{local_ip}:8000"
+        except:
+            # Fallback to request host
+            host = request.get_host()
+            server_url = f"{protocol}://{host}"
 
-    # Get the actual IP address for mobile access
-    try:
-        # Get the local IP address
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
-        s.close()
-        server_url = f"{protocol}://{local_ip}:8000"
-    except:
-        # Fallback to request host
-        host = request.get_host()
-        server_url = f"{protocol}://{host}"
+        # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(server_url)
+        qr.make(fit=True)
 
-    # Generate QR code
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(server_url)
-    qr.make(fit=True)
+        # Create QR code image
+        img = qr.make_image(fill_color="black", back_color="white")
 
-    # Create QR code image
-    img = qr.make_image(fill_color="black", back_color="white")
-
-    # Convert to base64 for embedding in HTML
-    buffer = BytesIO()
-    img.save(buffer, format='PNG')
-    qr_image_base64 = base64.b64encode(buffer.getvalue()).decode()
+        # Convert to base64 for embedding in HTML
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        qr_code_image = base64.b64encode(buffer.getvalue()).decode()
 
     context = {
         'stats': stats,
         'recent_activity': recent_activity,
         'server_url': server_url,
-        'qr_code_image': qr_image_base64,
+        'qr_code_image': qr_code_image,
         'year': datetime.now().year,
         'timestamp': timezone.now().timestamp(),  # For cache busting
     }
@@ -292,3 +303,21 @@ def get_recent_activity(user):
     # Sort by time and return most recent 10
     activities.sort(key=lambda x: x['time'], reverse=True)
     return activities[:10]
+
+
+# Custom Login View with Remember Me functionality
+class CustomLoginView(DjangoLoginView):
+    template_name = 'registration/login.html'
+    
+    def form_valid(self, form):
+        """Security check complete. Log the user in."""
+        remember_me = self.request.POST.get('remember_me')
+        
+        if remember_me:
+            # Set session to expire in 7 days
+            self.request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+        else:
+            # Use default session timeout (browser close)
+            self.request.session.set_expiry(0)
+        
+        return super().form_valid(form)

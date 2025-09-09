@@ -5,7 +5,7 @@ from .models import Flow, Step, Task, Person, Department
 class FlowForm(forms.ModelForm):
     class Meta:
         model = Flow
-        fields = ['name', 'description', 'start_date']
+        fields = ['name', 'description', 'start_date', 'is_active']
 
 
 class StepForm(forms.ModelForm):
@@ -18,7 +18,7 @@ class StepForm(forms.ModelForm):
     
     class Meta:
         model = Step
-        fields = ['title', 'description', 'responsible_person', 'time_allotted_days']
+        fields = ['title', 'description', 'time_allotted_days']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }
@@ -48,4 +48,14 @@ class StepForm(forms.ModelForm):
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'due_date', 'is_completed']
+        fields = ['title', 'description', 'responsible_person', 'due_date', 'is_completed']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'responsible_person': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set queryset for responsible_person to all people
+        self.fields['responsible_person'].queryset = Person.objects.all()
+        self.fields['responsible_person'].empty_label = "Select a person (optional)"

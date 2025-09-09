@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
-from main.views import register, home
+from main.views import register, home, CustomLoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,8 +30,8 @@ urlpatterns = [
     path('flow-builder/', include('flow_builder.urls')),
     # Registration page
     path('register/', register, name='register'),  # User registration
-    # Login page using Django's built-in view
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),  # User login
+    # Login page using custom view with Remember Me functionality
+    path('login/', CustomLoginView.as_view(), name='login'),  # User login
     # Logout page using Django's built-in view
     path('logout/', auth_views.LogoutView.as_view(template_name='registration/logged_out.html'), name='logout'),  # User logout
     # Password reset views
